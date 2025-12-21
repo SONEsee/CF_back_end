@@ -10,4 +10,5 @@ func SetRoutesMainMenu(router *echo.Group) {
 	router.GET("/data/all", controllers.GetMainMenuWhitAll)
 	router.GET("/test/funsun", controllers.GetMainMenutest)
 	router.GET("/suball-menu", controllers.GetSubllMenu)
+	router.POST("/create", controllers.CreateMainMenuController)
 }

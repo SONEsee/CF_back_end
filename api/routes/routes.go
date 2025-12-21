@@ -12,4 +12,10 @@ func SetRoutes(echo *echo.Group) {
 
 	subMenuRoutes := echo.Group("/sub")
 	SetRoutesSubmenu(subMenuRoutes)
+
+	taxRoutes := echo.Group("/tax")
+	SetRoutesTax(taxRoutes)
+
+	roleRoutes := echo.Group("/role")
+	SetRoutesRole(roleRoutes)
 }
