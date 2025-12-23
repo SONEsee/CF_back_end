@@ -6,5 +6,7 @@ import (
 )
 
 func SetRoutesSubmenu(routes *echo.Group) {
-	routes.GET("/suball-menu/", controllers.GetSubllMenu)
+	routes.GET("/suball-menu", controllers.GetSubllMenu)
+	routes.POST("/sub-menu", controllers.CreatedSubMeNuController)
+	routes.GET("/sub-menu", controllers.GetSubMenuController)
 }
