@@ -7,4 +7,8 @@ import (
 
 func SetRoutesRole(routes *echo.Group) {
 	routes.POST("/create", controllers.CreateRoleControllers)
+	routes.GET("/role", controllers.GetRoleControllers)
+	routes.PATCH("/role/:id/", controllers.UpdatedRolrePactController)
+	routes.PUT("/role/:id/", controllers.UpdatedRolePutControllers)
+	routes.DELETE("/role/:id/", controllers.DeleteRoleController)
 }

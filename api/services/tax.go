@@ -34,17 +34,14 @@ func GetDataByidServices(ctx context.Context, id int) (*dbschema.Tax, error) {
 }
 
 func GetTaxService(ctx context.Context, id *int, page, pageSize int) ([]dbschema.Tax, *pagination.PaginationResult, error) {
-
 	var paginationParams *pagination.PaginationParams
 	if page > 0 || pageSize > 0 {
 		paginationParams = pagination.NewPaginationParams(page, pageSize)
 	}
-
 	taxes, paginationResult, err := dbquery.GetTax(ctx, id, paginationParams)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get tax data: %w", err)
 	}
-
 	return taxes, paginationResult, nil
 }
 

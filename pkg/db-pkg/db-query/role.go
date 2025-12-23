@@ -14,19 +14,21 @@ import (
 func GetRoleDBquery(ctx context.Context, id *int, paginatoinParams *pagination.PaginationParams) ([]dbschema.Role, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 	if id != nil {
-		query := psql.Select("role_name", "detail").From(`"Role"`).Where("id=?", *id).Where("deleted_at IS NULL")
+		query := psql.Select("id", "role_name", "detail").From(`"Role"`).Where("id=?", *id).Where("deleted_at IS NULL")
 		spl, args, err := query.ToSql()
 		if err != nil {
 			return nil, nil, fmt.Errorf("fail convert for sql %w", err)
 		}
 		var item dbschema.Role
 		err = dbpkg.DB.QueryRow(ctx, spl, args...).Scan(
+
+			&item.ID,
 			&item.RoleName,
 			&item.Detail,
 		)
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				return nil, nil, fmt.Errorf("not id %b", *id)
+				return nil, nil, fmt.Errorf("role with id %d not found", *id)
 			}
 			return nil, nil, fmt.Errorf("fail to scan %w", err)
 		}
@@ -44,7 +46,7 @@ func GetRoleDBquery(ctx context.Context, id *int, paginatoinParams *pagination.P
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build count query: %w", err)
 	}
-	query := psql.Select("role_name", "detail").From(`"Role"`).Where("deleted_at IS NULL").OrderBy("id ASC")
+	query := psql.Select("id", "role_name", "detail").From(`"Role"`).Where("deleted_at IS NULL").OrderBy("id ASC")
 	var paginationResult *pagination.PaginationResult
 	if paginatoinParams != nil && paginatoinParams.IsValid() {
 		query = query.Limit(uint64(paginatoinParams.GetLimit())).Offset(uint64(paginatoinParams.GetOffset()))
@@ -62,6 +64,7 @@ func GetRoleDBquery(ctx context.Context, id *int, paginatoinParams *pagination.P
 	for rows.Next() {
 		var item dbschema.Role
 		err = rows.Scan(
+			&item.ID,
 			&item.RoleName,
 			&item.Detail,
 		)

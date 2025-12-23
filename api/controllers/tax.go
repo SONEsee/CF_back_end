@@ -103,7 +103,7 @@ func GetTaxDataByidController(c echo.Context) error {
 }
 
 func UpdateTaxController(ctx echo.Context) error {
-	// ດຶງ ID
+
 	taxID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
