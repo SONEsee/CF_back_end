@@ -10,6 +10,7 @@ import (
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
+	dbupdate "github.com/SONEsee/go-echo/pkg/db-pkg/db-update"
 	"github.com/SONEsee/go-echo/pkg/pagination"
 )
 
@@ -37,4 +38,22 @@ func GetSubMenuTotalServices(ctx context.Context, id *int, page, pageSize int) (
 		return nil, nil, fmt.Errorf("faild to get data %w", err)
 	}
 	return subes, PaginationResult, nil
+}
+
+func UpdateSubMenuPutServices(ctx context.Context, id int64, req requestbody.SubMenuRequesBody) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbupdate.UpdateSubMenuPut(ctx, db, id, req)
+	})
+	return err
+}
+
+func UpdateSubMenuPactServices(ctx context.Context, id int64, req requestbody.SubMenuRequesBodyPact) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbupdate.UpdateSubMenuPacth(ctx, db, id, req)
+	})
+	return err
 }

@@ -78,3 +78,71 @@ func GetSubMenuController(c echo.Context) error {
 		submenu,
 	))
 }
+
+func UpdateSubMenuController(c echo.Context) error {
+	idSubMenu, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+			"ID ບໍ່ຖືກຕ້ອງ",
+			"ກະລຸນາປ້ອນ ID ເປັນຕົວເລກ",
+		))
+	}
+	var req requestbody.SubMenuRequesBody
+	if err := validators.ParseAndValidateBody(c, &req); err != nil {
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+			"ຂໍ້ມູນບໍ່ຖືກຕ້ອງ",
+			err.Error(),
+		))
+	}
+	err = services.UpdateSubMenuPutServices(c.Request().Context(), idSubMenu, req)
+	if err != nil {
+
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return c.JSON(http.StatusNotFound, presenters.ResponseError(
+				"ບໍ່ພົບຂໍ້ມູນ",
+				err.Error(),
+			))
+		}
+		log.Printf("update submenu error: %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError(
+			"ເກີດຂໍ້ຜິດພາດ",
+			"ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້",
+		))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess(
+		"ອັບເດດຂໍ້ມູນສຳເລັດ",
+	))
+}
+func UpdateSubMenuControllerPut(c echo.Context) error {
+	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+			"ຮູບແບບ ID ບໍ່ຖືກຕອ້ງ",
+			"ກາລຸນາປອ້ນ ID ເປັນຕົວເລກ",
+		))
+	}
+	var req requestbody.SubMenuRequesBodyPact
+	if err := validators.ParseAndValidateBody(c, &req); err != nil {
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+			"ບໍ່ພົບຂໍ້ມູນ",
+			err.Error(),
+		))
+	}
+	err = services.UpdateSubMenuPactServices(c.Request().Context(), idParam, req)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return c.JSON(http.StatusNotFound, presenters.ResponseError(
+				"ບໍ່ພົບຂໍ້ມູນ",
+				err.Error(),
+			))
+		}
+		log.Printf("update submenu error: %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError(
+			"ເກີດຂໍ້ຜິດພາດ",
+			"ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້",
+		))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess(
+		"ອັບເດດຂໍ້ມູນສຳເລັດ",
+	))
+}

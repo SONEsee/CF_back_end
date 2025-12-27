@@ -9,4 +9,6 @@ func SetRoutesSubmenu(routes *echo.Group) {
 	routes.GET("/suball-menu", controllers.GetSubllMenu)
 	routes.POST("/sub-menu", controllers.CreatedSubMeNuController)
 	routes.GET("/sub-menu", controllers.GetSubMenuController)
+	routes.PUT("/sub-menu/:id/", controllers.UpdateSubMenuController)
+	routes.PATCH("/sub-menu/:id/", controllers.UpdateSubMenuControllerPut)
 }
