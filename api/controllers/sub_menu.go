@@ -146,3 +146,31 @@ func UpdateSubMenuControllerPut(c echo.Context) error {
 		"ອັບເດດຂໍ້ມູນສຳເລັດ",
 	))
 }
+
+func DeleteSebMenuControllers(c echo.Context) error {
+	idSubMenu, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+			"ຮູບແບບ id ບໍ່ຖືກຕອ້ງ",
+			"ໃຊ້ເປັນຕົວເລກ",
+		))
+	}
+	err = services.DeleteSubMenuServices(c.Request().Context(), idSubMenu)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return c.JSON(http.StatusNotFound, presenters.ResponseError(
+				"ບໍ່ພົບຂໍ້ມູນ",
+				err.Error(),
+			))
+		}
+
+		log.Printf("update submenu error: %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError(
+			"ເກີດຂໍ້ຜິດພາດ",
+			"ບໍ່ສາມາດລົບຂໍ້ມູນໄດ້",
+		))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess(
+		"ລົບຂໍ້ມູນສຳເລັດ",
+	))
+}

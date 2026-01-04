@@ -7,6 +7,7 @@ import (
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
 
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
+	dbdelete "github.com/SONEsee/go-echo/pkg/db-pkg/db-delete"
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
@@ -54,6 +55,15 @@ func UpdateSubMenuPactServices(ctx context.Context, id int64, req requestbody.Su
 	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
 		db := dbpkg.GetDBFromContext(ctx)
 		return dbupdate.UpdateSubMenuPacth(ctx, db, id, req)
+	})
+	return err
+}
+
+func DeleteSubMenuServices(ctx context.Context, id int64) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbdelete.DeLeteSubMenu(ctx, db, id)
 	})
 	return err
 }

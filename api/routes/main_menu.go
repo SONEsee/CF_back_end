@@ -6,9 +6,10 @@ import (
 )
 
 func SetRoutesMainMenu(router *echo.Group) {
-	router.GET("/data", controllers.GetMainMenuControllers)
-	router.GET("/data/all", controllers.GetMainMenuWhitAll)
-	router.GET("/test/funsun", controllers.GetMainMenutest)
-	router.GET("/suball-menu", controllers.GetSubllMenu)
 	router.POST("/create", controllers.CreateMainMenuController)
+	router.GET("/main-menu", controllers.GetDataMainMenuControllers)
+	router.PUT("/main-menu/:id/", controllers.UpdateMainMenuPutController)
+	router.PATCH("/main-menu/:id/", controllers.UpdateMainMenuPacthController)
+	router.DELETE("/main-menu/:id/", controllers.DeleteMainMEnuController)
+
 }
