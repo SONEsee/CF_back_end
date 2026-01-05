@@ -18,4 +18,6 @@ func SetRoutes(echo *echo.Group) {
 
 	roleRoutes := echo.Group("/role")
 	SetRoutesRole(roleRoutes)
+	typeMidsine := echo.Group("/type-midsine")
+	SetRoutesMidsine(typeMidsine)
 }
