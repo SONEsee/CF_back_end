@@ -9,6 +9,7 @@ import (
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
+	dbupdate "github.com/SONEsee/go-echo/pkg/db-pkg/db-update"
 	"github.com/SONEsee/go-echo/pkg/pagination"
 )
 
@@ -34,4 +35,22 @@ func GetDataTypeMedicineServices(ctx context.Context, id *int, page, pageSize in
 	}
 
 	return result, paginationResult, nil
+}
+
+func UpdateDateTypemidsinePutServices(ctx context.Context, id int64, req requestbody.TypeMedicine) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbupdate.UpdateTypeMidsinePut(ctx, db, id, req)
+	})
+	return err
+}
+
+func UpdateDateTypemidsinePatchServices(ctx context.Context, id int64, req requestbody.TypeMedisinePatch) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbupdate.UpdateTypeMidisinePatch(ctx, db, id, req)
+	})
+	return err
 }

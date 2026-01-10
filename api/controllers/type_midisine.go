@@ -70,3 +70,38 @@ func GetDataTypeMedicineControllers(c echo.Context) error {
 		result,
 	))
 }
+
+func UpdateTypemidsinePutController(c echo.Context) error {
+	idParma, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID format")
+	}
+	var req requestbody.TypeMedicine
+	if err := validators.ParseAndValidateBody(c, &req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	err = services.UpdateDateTypemidsinePutServices(ctx, idParma, req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESS"))
+
+}
+
+func UdateTypeMididesinePatchController(c echo.Context) error {
+	idParma, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID format")
+	}
+	var req requestbody.TypeMedisinePatch
+	if err := validators.ParseAndValidateBody(c, &req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	err = services.UpdateDateTypemidsinePatchServices(ctx, idParma, req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESSS"))
+}

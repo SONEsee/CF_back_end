@@ -15,7 +15,7 @@ import (
 func GetDataTypeMidsine(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.TypeMedicineDBSchema, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 	if id != nil {
-		// ✅ ເພີ່ມ id_type ໃນ SELECT
+
 		query := psql.Select("id_type", "name_type", "detail_type").From(`"TypeMidisine"`).Where("id_type=?", *id).Where("deleted_at IS NULL")
 		sql, args, err := query.ToSql()
 		if err != nil {
@@ -23,7 +23,7 @@ func GetDataTypeMidsine(ctx context.Context, id *int, paginationParams *paginati
 		}
 		var item dbschema.TypeMedicineDBSchema
 		err = dbpkg.DB.QueryRow(ctx, sql, args...).Scan(
-			&item.ID, // ✅ ເພີ່ມ scan id_type
+			&item.ID,
 			&item.NameType,
 			&item.Detail_Type,
 		)
@@ -47,7 +47,6 @@ func GetDataTypeMidsine(ctx context.Context, id *int, paginationParams *paginati
 		return nil, nil, fmt.Errorf("failed count %w", err)
 	}
 
-	// ✅ ເພີ່ມ id_type ໃນ SELECT ແລະໃຊ້ id_type ໃນ ORDER BY
 	query := psql.Select("id_type", "name_type", "detail_type").From(`"TypeMidisine"`).Where("deleted_at IS NULL").OrderBy("id_type ASC")
 	var paginationResult *pagination.PaginationResult
 	if paginationParams != nil && paginationParams.IsValid() {
@@ -67,7 +66,7 @@ func GetDataTypeMidsine(ctx context.Context, id *int, paginationParams *paginati
 	for rows.Next() {
 		var item dbschema.TypeMedicineDBSchema
 		err := rows.Scan(
-			&item.ID, // ✅ ເພີ່ມ scan id_type
+			&item.ID,
 			&item.NameType,
 			&item.Detail_Type,
 		)
