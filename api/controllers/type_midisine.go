@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/SONEsee/go-echo/api/presenters"
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
@@ -23,4 +26,47 @@ func CreateTypeMidsineController(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESS"))
+}
+func GetDataTypeMedicineControllers(c echo.Context) error {
+	ctx := c.Request().Context()
+	var id *int
+	if idParma := c.QueryParam("id"); idParma != "" {
+		parsedID, err := strconv.Atoi(idParma)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+				"ID ບໍ່ຖືກຕ້ອງ",
+				"ກະລຸນາລະບຸ ID ເປັນຕົວເລກ",
+			))
+		}
+		id = &parsedID
+	}
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
+	result, paginationResult, err := services.GetDataTypeMedicineServices(ctx, id, page, pageSize)
+	if err != nil {
+		if strings.Contains(err.Error(), "not Found") {
+			return c.JSON(http.StatusFound, presenters.ResponseError(
+				"ບໍ່ພົບຂໍ້ມູນ",
+				err.Error(),
+			))
+		}
+		log.Printf("Error Get Type Midesine %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError(
+			"ເກີດຂໍ້ຜິດພາດ",
+			"ບໍ່ສາມາດດຶງຂໍ້ມູນປະເພດຢາໄດ້",
+		))
+	}
+	if paginationResult != nil {
+		return c.JSON(http.StatusOK, presenters.ResponseSuccessListData(
+			result,
+			paginationResult.CurrentPage,
+			paginationResult.CurrentPageTotalItem,
+			paginationResult.TotalItems,
+			paginationResult.TotalPage,
+		))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccessWithData(
+		"ສຳເລັດດືງຂໍ້ມູນ",
+		result,
+	))
 }

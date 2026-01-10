@@ -7,4 +7,5 @@ import (
 
 func SetRoutesMidsine(routes *echo.Group) {
 	routes.POST("/create", controllers.CreateTypeMidsineController)
+	routes.GET("/type-midedine", controllers.GetDataTypeMedicineControllers)
 }
