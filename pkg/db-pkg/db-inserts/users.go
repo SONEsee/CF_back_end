@@ -11,9 +11,9 @@ import (
 func InsertNewUserTx(ctx context.Context, tx dbpkg.DBTX, req requestbody.UserRequestBody) error {
 	psql := db.GetPSQLCommand()
 	query := psql.
-		Insert("users").
-		Columns("name", "email").
-		Values(req.Name, req.Email)
+		Insert(`"User"`).
+		Columns("name", "full_name", "user_name", "password", "profile_image", "back_list", "role_id").
+		Values(req.Name, req.FullName, req.UserName, req.Password, req.ProfileImg, req.BlackList, req.RoleID)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err

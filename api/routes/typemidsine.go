@@ -10,5 +10,6 @@ func SetRoutesMidsine(routes *echo.Group) {
 	routes.GET("/type-midedine", controllers.GetDataTypeMedicineControllers)
 	routes.PUT("/type-midedine/:id", controllers.UpdateTypemidsinePutController)
 	routes.PUT("/type-midedine/:id", controllers.UdateTypeMididesinePatchController)
+	routes.DELETE("/type-midedine/:id", controllers.DeletedTypeMisineController)
 
 }

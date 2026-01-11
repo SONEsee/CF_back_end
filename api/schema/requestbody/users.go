@@ -1,6 +1,11 @@
 package requestbody
 
 type UserRequestBody struct {
-	Name  string `json:"name" validate:"required"`
-	Email string `json:"email" validate:"required,email"`
+	Name       string `json:"name" validate:"required,min=2,max=100"`
+	FullName   string `json:"full_name" validate:"required,min=2,max=200"`
+	UserName   string `json:"user_name" validate:"required,min=3,max=50,alphanum"`
+	Password   string `json:"password" validate:"required,min=8"`
+	ProfileImg string `json:"profile_image" validate:"omitempty,url"`
+	BlackList  bool   `json:"black_list"`
+	RoleID     int    `json:"role_id" validate:"required,gt=0"`
 }

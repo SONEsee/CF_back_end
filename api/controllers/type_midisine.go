@@ -105,3 +105,21 @@ func UdateTypeMididesinePatchController(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESSS"))
 }
+
+func DeletedTypeMisineController(c echo.Context) error {
+	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID format")
+
+	}
+	var req requestbody.TypeMedicine
+	if err := validators.ParseAndValidateBody(c, &req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	err = services.DeletedTypeMisineServices(ctx, idParam, req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESS"))
+}
