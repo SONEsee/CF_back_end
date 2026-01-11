@@ -9,3 +9,7 @@ type UserRequestBody struct {
 	BlackList  bool   `json:"black_list"`
 	RoleID     int    `json:"role_id" validate:"required,gt=0"`
 }
+type UserRequestBodyPacth struct {
+	Name     *string `json:"name,omitempty" validate:"omitempty,min=1,max=150"`
+	FullName *string `json:"full_name,omitempty" validate:"omitempty,min=1,max=150"`
+}
