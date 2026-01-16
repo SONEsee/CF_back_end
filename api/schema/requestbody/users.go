@@ -10,6 +10,11 @@ type UserRequestBody struct {
 	RoleID     int    `json:"role_id" validate:"required,gt=0"`
 }
 type UserRequestBodyPacth struct {
-	Name     *string `json:"name,omitempty" validate:"omitempty,min=1,max=150"`
-	FullName *string `json:"full_name,omitempty" validate:"omitempty,min=1,max=150"`
+	Name       *string `json:"name,omitempty" validate:"omitempty,min=1,max=150"`
+	FullName   *string `json:"full_name,omitempty" validate:"omitempty,min=1,max=150"`
+	UserName   *string `json:"user_name,omitempty" validate:"omitempty,min=1,max=150"`
+	Password   string  `json:"password" validate:"omitempty,min=8"`
+	ProfileImg *string `json:"profile_image" validate:"omitempty,url"`
+	BlackList  *string `json:"black_list,omitempty"`
+	RoleID     *int    `json:"role_id" validate:"omitempty,gt=0"`
 }

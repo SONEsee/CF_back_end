@@ -9,6 +9,7 @@ import (
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
+	dbupdate "github.com/SONEsee/go-echo/pkg/db-pkg/db-update"
 	"github.com/SONEsee/go-echo/pkg/pagination"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -53,4 +54,23 @@ func GetUserService(ctx context.Context, id *int, page, pageSize int) ([]dbschem
 		return nil, nil, err
 	}
 	return result, PaginationParam, nil
+}
+
+func UpdateUserServices(ctx context.Context, id int64, req requestbody.UserRequestBodyPacth) error {
+
+	if req.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to hash password: %w", err)
+		}
+		req.Password = string(hashedPassword)
+	}
+
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbupdate.UpdateUser(ctx, db, id, req)
+	})
+
+	return err
 }
