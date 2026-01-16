@@ -10,7 +10,7 @@ func SetUserRoutes(router *echo.Group) {
 	router.GET("/getData", controllers.GetUserController)
 	router.POST("/create", controllers.CreateUserController)
 	router.GET("/signToken", controllers.SingTokenController)
-	router.PATCH("/user-update/:id/", controllers.UpdateUserController)
+	router.PATCH("/user-update/:id", controllers.UpdateUserController)
 	//test with token middleware
 	router.GET("/me", controllers.UserAuthController, jwtpkg.VerifyToken)
 }
