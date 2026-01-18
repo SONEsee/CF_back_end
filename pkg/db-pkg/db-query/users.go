@@ -8,6 +8,7 @@ import (
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
 	"github.com/SONEsee/go-echo/pkg/pagination"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.GetUserDataDBSchema, *pagination.PaginationResult, error) {
@@ -83,6 +84,40 @@ func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *paginati
 	}
 	return items, paginationResult, nil
 
+}
+func GetUserByUsername(ctx context.Context, tx dbpkg.DBTX, username string) (*dbschema.GetUserDataDBSchema, error) {
+	psql := db.GetPSQLCommand()
+
+	query := psql.
+		Select("id", "name", "full_name", "user_name", "password", "profile_image", "back_list", "role_id"). // ✅ ປ່ຽນເປັນ back_list
+		From(`"User"`).
+		Where("user_name = ?", username).
+		Where("deleted_at IS NULL")
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build SQL: %w", err)
+	}
+
+	var user dbschema.GetUserDataDBSchema
+	err = tx.QueryRow(ctx, sql, args...).Scan(
+		&user.ID,
+		&user.Name,
+		&user.FullName,
+		&user.UserName,
+		&user.Password,
+		&user.ProfileImg,
+		&user.BackList,
+		&user.RoleID,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return &user, nil
 }
 
 // import (

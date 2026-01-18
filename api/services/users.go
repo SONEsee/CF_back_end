@@ -6,6 +6,7 @@ import (
 
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
+	dbdelete "github.com/SONEsee/go-echo/pkg/db-pkg/db-delete"
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
@@ -72,5 +73,13 @@ func UpdateUserServices(ctx context.Context, id int64, req requestbody.UserReque
 		return dbupdate.UpdateUser(ctx, db, id, req)
 	})
 
+	return err
+}
+func DeletdedUserServices(ctx context.Context, id int64) error {
+	tx := dbpkg.GetTransactionManager()
+	err := tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbdelete.DeletdedUser(ctx, db, id)
+	})
 	return err
 }

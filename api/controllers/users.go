@@ -12,7 +12,6 @@ import (
 	"github.com/SONEsee/go-echo/api/services"
 	"github.com/SONEsee/go-echo/api/validators"
 
-	jwtpkg "github.com/SONEsee/go-echo/pkg/jwt-pkg"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -64,6 +63,46 @@ func CreateUserController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESS"))
 }
+
+// func DeletedesUserController(c echo.Context) error {
+// 	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// 	if err != nil {
+// 		return c.JSON(http.StatusBadRequest, presenters.ResponseError(
+// 			"ຮູບແບບ ID ບໍ່ຖືກຕ້ອງ",
+// 			"ກະລຸນາປ້ອນ ID ເປັນຕົວເລກ",
+// 		))
+// 	}
+// 	ctx := c.Request().Context()
+// 	err = services.DeletdedUserServices(ctx, idParam)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return c.JSON(http.StatusOK, presenters.ResponseSuccess(
+// 		"ລົບຂໍ້ມູນສຳເລັດ",
+// 	))
+
+// }
+
+func DeleteUserController(c echo.Context) error {
+	// Parse ID
+	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid ID format")
+	}
+
+	// Delete User
+	ctx := c.Request().Context()
+	err = services.DeletdedUserServices(ctx, idParam)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess("DELETE SUCCESS"))
+}
+
 func UpdateUserController(c echo.Context) error {
 	// ✅ Parse ID
 	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -115,14 +154,15 @@ func UpdateUserController(c echo.Context) error {
 		"ອັບເດດຂໍ້ມູນສຳເລັດ",
 	))
 }
-func SingTokenController(c echo.Context) error {
-	token, err := jwtpkg.SignToken()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
 
-	return c.JSON(http.StatusOK, presenters.ResponseSuccess(token))
-}
+// func SingTokenController(c echo.Context) error {
+// 	token, err := jwtpkg.SignToken()
+// 	if err != nil {
+// 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+// 	}
+
+// 	return c.JSON(http.StatusOK, presenters.ResponseSuccess(token))
+// }
 
 func UserAuthController(c echo.Context) error {
 	var user = c.Get("user").(jwt.MapClaims)

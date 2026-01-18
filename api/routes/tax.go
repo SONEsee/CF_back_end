@@ -8,8 +8,6 @@ import (
 
 func SetRoutesTax(routes *echo.Group) {
 	routes.POST("/creat", controllers.CreateTaxControler)
-	routes.GET("/tax-all", controllers.GetDataTaxControllers)
-	routes.GET("/tax-id", controllers.GetDataByidController)
 	routes.GET("/taxbyid", controllers.GetTaxDataByidController)
 	routes.PUT("/update/:id/", controllers.UpdateTaxController)
 }
