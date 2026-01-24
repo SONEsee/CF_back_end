@@ -30,4 +30,7 @@ func SetRoutes(echo *echo.Group) {
 
 	typeMidsineRoutes := echo.Group("/type-midsine", middleware.AuthMiddleware)
 	SetRoutesMidsine(typeMidsineRoutes)
+
+	roleDetailRoutes := echo.Group("/role-detail", middleware.AuthMiddleware)
+	SetRoutesRoleDetail(roleDetailRoutes)
 }

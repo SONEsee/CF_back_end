@@ -130,3 +130,20 @@ func UpdateTaxController(ctx echo.Context) error {
 		"data":    req,
 	})
 }
+func DeletedTax(c echo.Context) error {
+
+	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+
+	err = services.DeletedTax(ctx, idParam)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, presenters.ResponseSuccess("DELETE SUCCESS"))
+}
