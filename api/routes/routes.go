@@ -18,19 +18,4 @@ func SetRoutes(echo *echo.Group) {
 
 	mainMenuRoutes := echo.Group("/main", middleware.AuthMiddleware)
 	SetRoutesMainMenu(mainMenuRoutes)
-
-	subMenuRoutes := echo.Group("/sub", middleware.AuthMiddleware)
-	SetRoutesSubmenu(subMenuRoutes)
-
-	taxRoutes := echo.Group("/tax", middleware.AuthMiddleware)
-	SetRoutesTax(taxRoutes)
-
-	roleRoutes := echo.Group("/role", middleware.AuthMiddleware)
-	SetRoutesRole(roleRoutes)
-
-	typeMidsineRoutes := echo.Group("/type-midsine", middleware.AuthMiddleware)
-	SetRoutesMidsine(typeMidsineRoutes)
-
-	roleDetailRoutes := echo.Group("/role-detail", middleware.AuthMiddleware)
-	SetRoutesRoleDetail(roleDetailRoutes)
 }
