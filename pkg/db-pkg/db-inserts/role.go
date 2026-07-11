@@ -8,11 +8,11 @@ import (
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 )
 
-func CreateMainMenu(ctx context.Context, tx dbpkg.DBTX, req requestbody.MainMenuRequesBody) error {
+func CreateRole(ctx context.Context, tx dbpkg.DBTX, req requestbody.RoleRequestBody) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Insert(`"main_menus"`).
-		Columns("module_id", "menu_name", "icon_class").
-		Values(req.ModuleID, req.NameMenu, req.IconMenu)
+	query := psql.Insert(`"roles"`).
+		Columns("shop_id", "role_name", "description").
+		Values(req.ShopID, req.RoleName, req.Description)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err

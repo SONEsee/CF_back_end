@@ -11,28 +11,31 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetMainMenuDataQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.MainMenuDGSchema, *pagination.PaginationResult, error) {
+func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.ShopDBSchema, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 
 	if id != nil {
-		query := psql.Select("id", "module_id", "menu_name", "icon_class").From(`"main_menus"`).Where("id=?", *id)
+		query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "created_at", "updated_at").
+			From(`"shops"`).Where("id=?", *id)
 		sql, args, err := query.ToSql()
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to build query: %w", err)
 		}
-		var item dbschema.MainMenuDGSchema
-		err = dbpkg.DB.QueryRow(ctx, sql, args...).Scan(&item.ID, &item.ModuleID, &item.NameMenu, &item.IconMenu)
+		var item dbschema.ShopDBSchema
+		err = dbpkg.DB.QueryRow(ctx, sql, args...).Scan(
+			&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.CreatedAt, &item.UpdatedAt,
+		)
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				return nil, nil, fmt.Errorf("main menu with id %d not found", *id)
+				return nil, nil, fmt.Errorf("shop with id %d not found", *id)
 			}
 			return nil, nil, fmt.Errorf("failed to execute query: %w", err)
 		}
-		return []dbschema.MainMenuDGSchema{item}, nil, nil
+		return []dbschema.ShopDBSchema{item}, nil, nil
 	}
 
 	var totalItem int
-	countSQL, countArgs, err := psql.Select("COUNT(*)").From(`"main_menus"`).ToSql()
+	countSQL, countArgs, err := psql.Select("COUNT(*)").From(`"shops"`).ToSql()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build count query: %w", err)
 	}
@@ -40,7 +43,8 @@ func GetMainMenuDataQuery(ctx context.Context, id *int, paginationParams *pagina
 		return nil, nil, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := psql.Select("id", "module_id", "menu_name", "icon_class").From(`"main_menus"`).OrderBy("id ASC")
+	query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "created_at", "updated_at").
+		From(`"shops"`).OrderBy("id ASC")
 
 	var paginationResult *pagination.PaginationResult
 	if paginationParams != nil && paginationParams.IsValid() {
@@ -53,14 +57,14 @@ func GetMainMenuDataQuery(ctx context.Context, id *int, paginationParams *pagina
 	}
 	rows, err := dbpkg.DB.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query main menus: %w", err)
+		return nil, nil, fmt.Errorf("failed to query shops: %w", err)
 	}
 	defer rows.Close()
 
-	var items []dbschema.MainMenuDGSchema
+	var items []dbschema.ShopDBSchema
 	for rows.Next() {
-		var item dbschema.MainMenuDGSchema
-		if err := rows.Scan(&item.ID, &item.ModuleID, &item.NameMenu, &item.IconMenu); err != nil {
+		var item dbschema.ShopDBSchema
+		if err := rows.Scan(&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			return nil, nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		items = append(items, item)

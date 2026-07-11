@@ -2,7 +2,7 @@ package dbupdate
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
 	"github.com/SONEsee/go-echo/config/db"
@@ -11,29 +11,48 @@ import (
 
 func UpdateMainMenuPut(ctx context.Context, id int64, tx dbpkg.DBTX, req requestbody.MainMenuRequesBody) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Update(`"MainMenu"`).Set("name_menu", req.NameMenu).Set("icon_menu", req.IconMenu).Set("updated_at", time.Now()).Where("id=?", id).Where("deleted_at IS NULL")
+	query := psql.Update(`"main_menus"`).
+		Set("module_id", req.ModuleID).
+		Set("menu_name", req.NameMenu).
+		Set("icon_class", req.IconMenu).
+		Where("id=?", id)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, sql, args...)
-	return err
+	result, err := tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("main menu with id %d not found", id)
+	}
+	return nil
 }
 
 func UpdateMainMenuPacth(ctx context.Context, tx dbpkg.DBTX, id int64, req requestbody.MainMenuPatchRequest) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Update(`"MainMenu"`)
+	query := psql.Update(`"main_menus"`)
+	if req.ModuleID != nil {
+		query = query.Set("module_id", *req.ModuleID)
+	}
 	if req.NameMenu != nil {
-		query = query.Set("name_menu", req.NameMenu)
+		query = query.Set("menu_name", *req.NameMenu)
 	}
 	if req.IconMenu != nil {
-		query = query.Set("icon_menu", req.IconMenu)
+		query = query.Set("icon_class", *req.IconMenu)
 	}
-	query = query.Set("updated_at", time.Now()).Where("id=?", id).Where("deleted_at IS NULL")
+	query = query.Where("id=?", id)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(ctx, sql, args...)
-	return err
+	result, err := tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("main menu with id %d not found", id)
+	}
+	return nil
 }

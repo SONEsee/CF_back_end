@@ -8,11 +8,15 @@ import (
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 )
 
-func CreateMainMenu(ctx context.Context, tx dbpkg.DBTX, req requestbody.MainMenuRequesBody) error {
+func CreateShop(ctx context.Context, tx dbpkg.DBTX, req requestbody.ShopRequestBody) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Insert(`"main_menus"`).
-		Columns("module_id", "menu_name", "icon_class").
-		Values(req.ModuleID, req.NameMenu, req.IconMenu)
+	timezone := req.Timezone
+	if timezone == "" {
+		timezone = "Asia/Bangkok"
+	}
+	query := psql.Insert(`"shops"`).
+		Columns("shop_name", "owner_user_id", "phone", "timezone").
+		Values(req.ShopName, req.OwnerUserID, req.Phone, timezone)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err

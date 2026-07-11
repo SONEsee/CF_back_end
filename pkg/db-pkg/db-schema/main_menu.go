@@ -1,11 +1,8 @@
 package dbschema
 
-import "time"
-
 type MainMenuDGSchema struct {
-	ID        int       `db:"id" json:"id"`
-	NameMenu  string    `db:"mame_menu" json:"name_menu"`
-	IconMenu  string    `db:"icon_menu" json:"icon_menu"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	ID       int    `db:"id" json:"id"`
+	ModuleID int    `db:"module_id" json:"module_id"`
+	NameMenu string `db:"menu_name" json:"menu_name"`
+	IconMenu string `db:"icon_class" json:"icon_class"`
 }

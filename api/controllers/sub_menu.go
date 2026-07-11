@@ -10,116 +10,100 @@ import (
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
 	"github.com/SONEsee/go-echo/api/services"
 	"github.com/SONEsee/go-echo/api/validators"
-
 	"github.com/labstack/echo/v4"
 )
 
-func CreateMainMenuController(c echo.Context) error {
-	var req requestbody.MainMenuRequesBody
+func CreateSubMenuController(c echo.Context) error {
+	var req requestbody.SubMenuRequesBody
 	if err := validators.ParseAndValidateBody(c, &req); err != nil {
 		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຂໍ້ມູນບໍ່ຖືກຕ້ອງ", err.Error()))
 	}
-	if err := services.CreateMainMenuServices(c.Request().Context(), req); err != nil {
-		log.Printf("create main menu error: %v", err)
-		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ບໍ່ສາມາດສ້າງເມນູໄດ້", err.Error()))
+	if err := services.CreateSubMenuServices(c.Request().Context(), req); err != nil {
+		log.Printf("create sub menu error: %v", err)
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ບໍ່ສາມາດສ້າງເມນູຍ່ອຍໄດ້", err.Error()))
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("SUCCESS"))
 }
 
-func GetDataMainMenuControllers(c echo.Context) error {
+func GetDataSubMenuController(c echo.Context) error {
 	ctx := c.Request().Context()
-
 	var id *int
 	if idParam := c.QueryParam("id"); idParam != "" {
 		parsedID, err := strconv.Atoi(idParam)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, presenters.ResponseError("ID ບໍ່ຖືກຕ້ອງ", "ກະລຸນາປ້ອນ ID ເປັນຕົວເລກ"))
+			return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຮູບແບບ ID ບໍ່ຖືກຕ້ອງ", "ກະລຸນາປ້ອນ ID ເປັນຕົວເລກ"))
 		}
 		id = &parsedID
 	}
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
 
-	page, err := strconv.Atoi(c.QueryParam("page"))
-	if err != nil || page < 1 {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(c.QueryParam("limit"))
-	if err != nil || pageSize < 1 {
-		pageSize = 10
-	}
-
-	mainmenus, paginationResult, err := services.GetDataMainMenuServices(ctx, id, page, pageSize)
+	items, paginationResult, err := services.GetDataSubMenuServices(ctx, id, page, pageSize)
 	if err != nil {
-		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
 		}
-		log.Printf("failed to get mainmenu data: %v", err)
+		log.Printf("get sub menu error: %v", err)
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້"))
 	}
-
 	if paginationResult != nil {
 		return c.JSON(http.StatusOK, presenters.ResponseSuccessListData(
-			mainmenus,
-			paginationResult.CurrentPage,
-			paginationResult.CurrentPageTotalItem,
-			paginationResult.TotalItems,
-			paginationResult.TotalPage,
+			items, paginationResult.CurrentPage, paginationResult.CurrentPageTotalItem,
+			paginationResult.TotalItems, paginationResult.TotalPage,
 		))
 	}
-	return c.JSON(http.StatusOK, presenters.ResponseSuccessWithData("ດຶງຂໍ້ມູນສຳເລັດ", mainmenus))
+	return c.JSON(http.StatusOK, presenters.ResponseSuccessWithData("ດຶງຂໍ້ມູນສຳເລັດ", items))
 }
 
-func UpdateMainMenuPutController(c echo.Context) error {
-	idParam, err := strconv.ParseInt(c.Param("id"), 10, 64)
+func UpdateSubMenuPutController(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຮຸບແບບບໍ່ຖືກຕອ້ງ", "ກາລຸນາປອ້ນເປັນ ID ເປັນໂຕເລກ"))
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ID ບໍ່ຖືກຕ້ອງ", "ກະລຸນາລະບຸ ID ເປັນຕົວເລກ"))
 	}
-	var req requestbody.MainMenuRequesBody
+	var req requestbody.SubMenuRequesBody
 	if err := validators.ParseAndValidateBody(c, &req); err != nil {
 		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຂໍ້ມູນບໍ່ຖືກຕ້ອງ", err.Error()))
 	}
-	err = services.UpdateMainMenuPutServices(c.Request().Context(), idParam, req)
-	if err != nil {
+	if err := services.UpdateSubMenuPutServices(c.Request().Context(), id, req); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
 		}
-		log.Printf("failed update main menu services %v", err)
+		log.Printf("update sub menu error: %v", err)
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້"))
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("ອັບເດດຂໍ້ມູນສຳເລັດ"))
 }
 
-func UpdateMainMenuPacthController(c echo.Context) error {
-	idMenMenu, err := strconv.ParseInt(c.Param("id"), 10, 64)
+func UpdateSubMenuPatchController(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຮຸບແບບບໍ່ຖືກຕອ້ງ", "ກາລຸນາປອ້ນເປັນ ID ເປັນໂຕເລກ"))
+		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ID ບໍ່ຖືກຕ້ອງ", "ກະລຸນາລະບຸ ID ເປັນຕົວເລກ"))
 	}
-	var req requestbody.MainMenuPatchRequest
+	var req requestbody.SubMenuPatchRequest
 	if err := validators.ParseAndValidateBody(c, &req); err != nil {
 		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຂໍ້ມູນບໍ່ຖືກຕ້ອງ", err.Error()))
 	}
-	err = services.UpdateMainMenuServicesPacth(c.Request().Context(), idMenMenu, req)
-	if err != nil {
+	if err := services.UpdateSubMenuServicesPatch(c.Request().Context(), id, req); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
 		}
-		log.Printf("failed update main menu services %v", err)
+		log.Printf("patch sub menu error: %v", err)
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້"))
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("ອັບເດດຂໍ້ມູນສຳເລັດ"))
 }
 
-// DeleteMainMEnuController ລົບແຖວແທ້ (main_menus ບໍ່ມີ deleted_at) — ຈະ cascade ລົບ sub_menus/permissions ທີ່ຜູກກັບເມນູນີ້ນຳ
-func DeleteMainMEnuController(c echo.Context) error {
-	idMenMenu, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// DeleteSubMenuController ລົບແຖວແທ້ (sub_menus ບໍ່ມີ deleted_at) — ຈະ cascade ລົບ permissions ນຳ
+func DeleteSubMenuController(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, presenters.ResponseError("ຮູບແບບ ID ບໍ່ຖືກຕ້ອງ", "ກະລຸນາປ້ອນ ID ເປັນຕົວເລກ"))
 	}
-	err = services.DeletedMainMenuServices(c.Request().Context(), idMenMenu)
-	if err != nil {
+	if err := services.DeleteSubMenuServices(c.Request().Context(), id); err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
 		}
-		log.Printf("failed delete main menu services %v", err)
+		log.Printf("delete sub menu error: %v", err)
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດລົບຂໍ້ມູນໄດ້"))
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("ລົບຂໍ້ມູນສຳເລັດ"))

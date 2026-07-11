@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	"github.com/SONEsee/go-echo/api/schema/requestbody"
-
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
-	dbdelete "github.com/SONEsee/go-echo/pkg/db-pkg/db-delete"
 	dbinserts "github.com/SONEsee/go-echo/pkg/db-pkg/db-inserts"
 	dbquery "github.com/SONEsee/go-echo/pkg/db-pkg/db-query"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
@@ -15,46 +13,46 @@ import (
 	"github.com/SONEsee/go-echo/pkg/pagination"
 )
 
-func CreateMainMenuServices(ctx context.Context, req requestbody.MainMenuRequesBody) error {
+func CreateShopServices(ctx context.Context, req requestbody.ShopRequestBody) error {
 	tx := dbpkg.GetTransactionManager()
 	return tx.WithTransaction(ctx, func(ctx context.Context) error {
 		db := dbpkg.GetDBFromContext(ctx)
-		return dbinserts.CreateMainMenu(ctx, db, req)
+		return dbinserts.CreateShop(ctx, db, req)
 	})
 }
 
-func GetDataMainMenuServices(ctx context.Context, id *int, page, pageSize int) ([]dbschema.MainMenuDGSchema, *pagination.PaginationResult, error) {
+func GetDataShopServices(ctx context.Context, id *int, page, pageSize int) ([]dbschema.ShopDBSchema, *pagination.PaginationResult, error) {
 	var paginationParam *pagination.PaginationParams
 	if page > 0 || pageSize > 0 {
 		paginationParam = pagination.NewPaginationParams(page, pageSize)
 	}
-	mainmenu, paginationResult, err := dbquery.GetMainMenuDataQuery(ctx, id, paginationParam)
+	items, result, err := dbquery.GetShopDataQuery(ctx, id, paginationParam)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get data: %w", err)
 	}
-	return mainmenu, paginationResult, nil
+	return items, result, nil
 }
 
-func UpdateMainMenuPutServices(ctx context.Context, id int64, req requestbody.MainMenuRequesBody) error {
+func UpdateShopPutServices(ctx context.Context, id int64, req requestbody.ShopRequestBody) error {
 	tx := dbpkg.GetTransactionManager()
 	return tx.WithTransaction(ctx, func(ctx context.Context) error {
 		db := dbpkg.GetDBFromContext(ctx)
-		return dbupdate.UpdateMainMenuPut(ctx, id, db, req)
+		return dbupdate.UpdateShopPut(ctx, db, id, req)
 	})
 }
 
-func UpdateMainMenuServicesPacth(ctx context.Context, id int64, req requestbody.MainMenuPatchRequest) error {
+func UpdateShopServicesPatch(ctx context.Context, id int64, req requestbody.ShopPatchRequest) error {
 	tx := dbpkg.GetTransactionManager()
 	return tx.WithTransaction(ctx, func(ctx context.Context) error {
 		db := dbpkg.GetDBFromContext(ctx)
-		return dbupdate.UpdateMainMenuPacth(ctx, db, id, req)
+		return dbupdate.UpdateShopPatch(ctx, db, id, req)
 	})
 }
 
-func DeletedMainMenuServices(ctx context.Context, id int64) error {
+func UpdateShopStatusServices(ctx context.Context, id int64, status string) error {
 	tx := dbpkg.GetTransactionManager()
 	return tx.WithTransaction(ctx, func(ctx context.Context) error {
 		db := dbpkg.GetDBFromContext(ctx)
-		return dbdelete.DeletedMainMenu(ctx, db, id)
+		return dbupdate.UpdateShopStatus(ctx, db, id, status)
 	})
 }
