@@ -6,11 +6,10 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResponse struct {
-	ID         int64  `json:"id"`
-	Name       string `json:"name"`
-	FullName   string `json:"full_name"`
-	UserName   string `json:"user_name"`
-	ProfileImg string `json:"profile_image,omitempty"`
-	RoleID     int    `json:"role_id"`
-	Token      string `json:"token,omitempty"`
+	ID       int64  `json:"id"`
+	FullName string `json:"full_name"`
+	UserName string `json:"user_name"`
+	Email    string `json:"email,omitempty"`
+	RoleID   int    `json:"role_id"`
+	Token    string `json:"token,omitempty"`
 }

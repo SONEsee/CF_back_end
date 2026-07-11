@@ -8,11 +8,11 @@ import (
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 )
 
-func InsertNewUserTx(ctx context.Context, tx dbpkg.DBTX, req requestbody.UserRequestBody) error {
+func CreateProductImage(ctx context.Context, tx dbpkg.DBTX, req requestbody.ProductImageRequestBody) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Insert(`"users"`).
-		Columns("shop_id", "role_id", "username", "password_hash", "full_name", "email", "phone").
-		Values(req.ShopID, req.RoleID, req.Username, req.Password, req.FullName, req.Email, req.Phone)
+	query := psql.Insert(`"product_images"`).
+		Columns("product_id", "image_url", "sort_order").
+		Values(req.ProductID, req.ImageURL, req.SortOrder)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err

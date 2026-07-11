@@ -11,7 +11,7 @@ func SetUserRoutes(router *echo.Group) {
 	router.GET("/getData", controllers.GetUserController)
 	router.POST("/create", controllers.CreateUserController)
 	router.PATCH("/user-update/:id", controllers.UpdateUserController)
-	router.DELETE("/deleted/:id", controllers.DeleteUserController)
+	router.DELETE("/deleted/:id", controllers.DeactivateUserController)
 	router.GET("/me", controllers.UserAuthController, jwtpkg.AuthMiddleware)
 
 }

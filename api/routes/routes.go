@@ -44,4 +44,17 @@ func SetRoutes(echo *echo.Group) {
 
 	roleRoutes := echo.Group("/role", middleware.AuthMiddleware)
 	SetRoutesRole(roleRoutes)
+
+	permissionRoutes := echo.Group("/permission", middleware.AuthMiddleware)
+	SetRoutesPermission(permissionRoutes)
+
+	// ✅ Zone 3: Product catalog
+	productCategoryRoutes := echo.Group("/product-category", middleware.AuthMiddleware)
+	SetRoutesProductCategory(productCategoryRoutes)
+
+	productRoutes := echo.Group("/product", middleware.AuthMiddleware)
+	SetRoutesProduct(productRoutes)
+
+	productImageRoutes := echo.Group("/product-image", middleware.AuthMiddleware)
+	SetRoutesProductImage(productImageRoutes)
 }

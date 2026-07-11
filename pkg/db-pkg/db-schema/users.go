@@ -1,12 +1,18 @@
 package dbschema
 
-type GetUserDataDBSchema struct {
-	ID         int    `json:"id"`
-	Name       string `db:"name" json:"name"`
-	FullName   string `db:"full_name" json:"full_name"`
-	UserName   string `db:"user_name" json:"user_name"`
-	Password   string `db:"password" json:"password"`
-	ProfileImg string `db:"profile_image" json:"profile_image"`
-	BackList   bool   `db:"back_list" json:"black_list"`
-	RoleID     int    `db:"role_id" json:"role_id"`
+import "time"
+
+type UserDBSchema struct {
+	ID           int        `db:"id" json:"id"`
+	ShopID       *int       `db:"shop_id" json:"shop_id"`
+	RoleID       int        `db:"role_id" json:"role_id"`
+	Username     string     `db:"username" json:"username"`
+	PasswordHash string     `db:"password_hash" json:"-"`
+	FullName     string     `db:"full_name" json:"full_name"`
+	Email        string     `db:"email" json:"email"`
+	Phone        string     `db:"phone" json:"phone"`
+	IsActive     bool       `db:"is_active" json:"is_active"`
+	LastLoginAt  *time.Time `db:"last_login_at" json:"last_login_at"`
+	CreatedAt    time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time  `db:"updated_at" json:"updated_at"`
 }

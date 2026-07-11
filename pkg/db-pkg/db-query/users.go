@@ -11,147 +11,92 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.GetUserDataDBSchema, *pagination.PaginationResult, error) {
+var userColumns = []string{"id", "shop_id", "role_id", "username", "password_hash", "full_name", "email", "phone", "is_active", "last_login_at", "created_at", "updated_at"}
+
+func scanUser(row pgx.Row, item *dbschema.UserDBSchema) error {
+	return row.Scan(
+		&item.ID, &item.ShopID, &item.RoleID, &item.Username, &item.PasswordHash,
+		&item.FullName, &item.Email, &item.Phone, &item.IsActive, &item.LastLoginAt,
+		&item.CreatedAt, &item.UpdatedAt,
+	)
+}
+
+func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.UserDBSchema, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 
 	if id != nil {
-		query := psql.Select("id", "name", "full_name", "user_name", "password", "profile_image", "back_list", "role_id").
-			From(`"User"`).Where("id=?", id).
-			Where("deleted_at IS NULL")
+		query := psql.Select(userColumns...).From(`"users"`).Where("id=?", *id)
 		sql, args, err := query.ToSql()
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed convert for sql %w", err)
+			return nil, nil, fmt.Errorf("failed to build query: %w", err)
 		}
-		var item dbschema.GetUserDataDBSchema
-		err = dbpkg.DB.QueryRow(ctx, sql, args...).Scan(
-			&item.ID,
-			&item.Name,
-			&item.FullName,
-			&item.UserName,
-			&item.Password,
-			&item.ProfileImg,
-			&item.BackList,
-			&item.RoleID,
-		)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fail scan data row error %w", err)
+		var item dbschema.UserDBSchema
+		if err := scanUser(dbpkg.DB.QueryRow(ctx, sql, args...), &item); err != nil {
+			if err == pgx.ErrNoRows {
+				return nil, nil, fmt.Errorf("user with id %d not found", *id)
+			}
+			return nil, nil, fmt.Errorf("failed to execute query: %w", err)
 		}
-		return []dbschema.GetUserDataDBSchema{item}, nil, nil
+		return []dbschema.UserDBSchema{item}, nil, nil
+	}
 
-	}
 	var totalItem int
-	queryCount := psql.Select("COUNT(*)").From(`"User"`).Where("deleted_at IS NULL")
-	sqlCount, argsCount, err := queryCount.ToSql()
+	countSQL, countArgs, err := psql.Select("COUNT(*)").From(`"users"`).ToSql()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed for convert for sql %w", err)
+		return nil, nil, fmt.Errorf("failed to build count query: %w", err)
 	}
-	err = dbpkg.DB.QueryRow(ctx, sqlCount, argsCount...).Scan(&totalItem)
-	if err != nil {
-		return nil, nil, err
+	if err := dbpkg.DB.QueryRow(ctx, countSQL, countArgs...).Scan(&totalItem); err != nil {
+		return nil, nil, fmt.Errorf("failed to count records: %w", err)
 	}
-	query := psql.Select("id", "name", "full_name", "user_name", "password", "profile_image", "back_list", "role_id").From(`"User"`).Where("deleted_at IS NULL").OrderBy("id ASC")
+
+	query := psql.Select(userColumns...).From(`"users"`).OrderBy("id ASC")
+
 	var paginationResult *pagination.PaginationResult
 	if paginationParams != nil && paginationParams.IsValid() {
 		query = query.Limit(uint64(paginationParams.GetLimit())).Offset(uint64(paginationParams.GetOffset()))
 	}
 
 	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to build query: %w", err)
+	}
 	rows, err := dbpkg.DB.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to query users: %w", err)
 	}
 	defer rows.Close()
-	var items []dbschema.GetUserDataDBSchema
+
+	var items []dbschema.UserDBSchema
 	for rows.Next() {
-		var item dbschema.GetUserDataDBSchema
-		err = rows.Scan(
-			&item.ID,
-			&item.Name,
-			&item.FullName,
-			&item.UserName,
-			&item.Password,
-			&item.ProfileImg,
-			&item.BackList,
-			&item.RoleID,
-		)
-		if err != nil {
-			return nil, nil, err
+		var item dbschema.UserDBSchema
+		if err := scanUser(rows, &item); err != nil {
+			return nil, nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		items = append(items, item)
 	}
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed getl data user %w", err)
+	if err := rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	if paginationParams != nil && paginationParams.IsValid() {
+		paginationResult = paginationParams.CalculatePagination(totalItem, len(items))
 	}
 	return items, paginationResult, nil
-
 }
-func GetUserByUsername(ctx context.Context, tx dbpkg.DBTX, username string) (*dbschema.GetUserDataDBSchema, error) {
+
+func GetUserByUsername(ctx context.Context, tx dbpkg.DBTX, username string) (*dbschema.UserDBSchema, error) {
 	psql := db.GetPSQLCommand()
-
-	query := psql.
-		Select("id", "name", "full_name", "user_name", "password", "profile_image", "back_list", "role_id"). // ✅ ປ່ຽນເປັນ back_list
-		From(`"User"`).
-		Where("user_name = ?", username).
-		Where("deleted_at IS NULL")
-
+	query := psql.Select(userColumns...).From(`"users"`).Where("username=?", username)
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("failed to build SQL: %w", err)
+		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
-
-	var user dbschema.GetUserDataDBSchema
-	err = tx.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.Name,
-		&user.FullName,
-		&user.UserName,
-		&user.Password,
-		&user.ProfileImg,
-		&user.BackList,
-		&user.RoleID,
-	)
-	if err != nil {
+	var item dbschema.UserDBSchema
+	if err := scanUser(tx.QueryRow(ctx, sql, args...), &item); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("user not found")
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
-
-	return &user, nil
+	return &item, nil
 }
-
-// import (
-// 	"context"
-
-// 	"github.com/SONEsee/go-echo/config/db"
-// 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
-// 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
-// )
-
-// func GetUserDataDBQuery(ctx context.Context) ([]dbschema.GetUserDataDBSchema, error) {
-// 	var res = []dbschema.GetUserDataDBSchema{}
-// 	psql := db.GetPSQLCommand()
-// 	query := psql.
-// 		Select("id", "name", "email").
-// 		From("users")
-// 	sql, args, err := query.ToSql()
-// 	if err != nil {
-// 		return res, err
-// 	}
-
-// 	rows, err := dbpkg.DB.Query(ctx, sql, args...)
-// 	if err != nil {
-// 		return res, err
-// 	}
-// 	defer rows.Close()
-
-// 	for rows.Next() {
-// 		var item dbschema.GetUserDataDBSchema
-// 		if err := rows.Scan(&item.ID, &item.Name, &item.Email); err != nil {
-// 			return res, err
-// 		}
-// 		res = append(res, item)
-// 	}
-
-// 	return res, nil
-// }

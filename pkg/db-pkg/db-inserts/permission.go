@@ -8,11 +8,11 @@ import (
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 )
 
-func InsertNewUserTx(ctx context.Context, tx dbpkg.DBTX, req requestbody.UserRequestBody) error {
+func CreatePermission(ctx context.Context, tx dbpkg.DBTX, req requestbody.PermissionRequestBody) error {
 	psql := db.GetPSQLCommand()
-	query := psql.Insert(`"users"`).
-		Columns("shop_id", "role_id", "username", "password_hash", "full_name", "email", "phone").
-		Values(req.ShopID, req.RoleID, req.Username, req.Password, req.FullName, req.Email, req.Phone)
+	query := psql.Insert(`"permissions"`).
+		Columns("role_id", "submenu_id", "can_view", "can_create", "can_update", "can_delete").
+		Values(req.RoleID, req.SubmenuID, req.CanView, req.CanCreate, req.CanUpdate, req.CanDelete)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err
