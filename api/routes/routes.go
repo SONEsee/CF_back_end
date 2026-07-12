@@ -10,6 +10,10 @@ func SetRoutes(echo *echo.Group) {
 	authRoutes := echo.Group("/auth")
 	SetRoutesLogin(authRoutes)
 
+	// ✅ Webhook routes (public) - ບໍ່ຕ້ອງການ login, ຄວາມປອດໄພອີງໃສ່ signature verification
+	webhookPublicRoutes := echo.Group("/webhook")
+	SetRoutesWebhookPublic(webhookPublicRoutes)
+
 	// ✅ Protected routes - ຕ້ອງການ login
 	// ໃຊ້ middleware.AuthMiddleware ກັບທຸກ routes ຂ້າງລຸ່ມນີ້
 

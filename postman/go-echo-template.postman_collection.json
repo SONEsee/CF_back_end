@@ -1,0 +1,1875 @@
+{
+  "info": {
+    "name": "go-echo-template — Full Workspace (Zone 1-7)",
+    "description": "ລວມທຸກ zone ເປັນ workspace ດຽວ. ຮັນ \"0. Auth > Login\" ກ່ອນສະເໝີ — token ຈະຖືກບັນທຶກໃສ່ collection variable `token` ອັດຕະໂນມັດ ແລ້ວ request ອື່ນທັງໝົດຈະໃຊ້ token ນັ້ນຕໍ່ (inherit ຈາກ collection-level bearer auth) ໂດຍບໍ່ຕ້ອງກັອບ token ໃສ່ເອງ.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1"
+    },
+    {
+      "key": "login_username",
+      "value": "admin01"
+    },
+    {
+      "key": "login_password",
+      "value": "password123"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Auth (ຮັນກ່ອນສະເໝີ)",
+      "item": [
+        {
+          "name": "Login (auto-save token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function getBody() {",
+                  "    if (typeof pm !== 'undefined') return pm.response.json();",
+                  "    if (typeof res !== 'undefined') return res.getBody();",
+                  "    return null;",
+                  "}",
+                  "",
+                  "function setToken(value) {",
+                  "    if (typeof pm !== 'undefined') { pm.collectionVariables.set(\"token\", value); return; }",
+                  "    if (typeof bru !== 'undefined') { bru.setVar(\"token\", value); return; }",
+                  "}",
+                  "",
+                  "if (typeof pm !== 'undefined') {",
+                  "    pm.test(\"Login successful\", function () {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "}",
+                  "",
+                  "var jsonData = getBody();",
+                  "if (jsonData && jsonData.items && jsonData.items.token) {",
+                  "    setToken(jsonData.items.token);",
+                  "    console.log(\"✅ token saved:\", jsonData.items.token.substring(0, 20) + \"...\");",
+                  "} else {",
+                  "    console.warn(\"⚠️ no token found in login response\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_name\": \"{{login_username}}\",\n  \"password\": \"{{login_password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me (current user, ທົດສອບ token)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/users/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zone 1: Tenant/Billing",
+      "item": [
+        {
+          "name": "1. Subscription Plans",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/subscription-plan/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan_name\": \"Starter\",\n  \"price_monthly\": 99.99,\n  \"max_users\": 3,\n  \"max_products\": 100,\n  \"features\": \"{\\\"live_selling\\\":true}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List (pagination)",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/subscription-plan/plan?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Get by id",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/subscription-plan/plan?id={{plan_id}}"
+              }
+            },
+            {
+              "name": "Update (PUT — ທັບທັງໝົດ)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/subscription-plan/plan/{{plan_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan_name\": \"Starter-Plus\",\n  \"price_monthly\": 149.99,\n  \"max_users\": 5,\n  \"max_products\": 200\n}"
+                }
+              }
+            },
+            {
+              "name": "Update (PATCH — ບາງ field)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/subscription-plan/plan/{{plan_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"max_users\": 5\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Shops",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_name\": \"Vientiane Fashion\",\n  \"phone\": \"02099999999\",\n  \"timezone\": \"Asia/Vientiane\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List (pagination)",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop/shop?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Get by id",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop/shop?id={{shop_id}}"
+              }
+            },
+            {
+              "name": "Update (PUT)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop/shop/{{shop_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_name\": \"Vientiane Fashion Co.\",\n  \"phone\": \"02088888888\",\n  \"timezone\": \"Asia/Vientiane\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop/shop/{{shop_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"02077777777\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Change status (ACTIVE/SUSPENDED/TRIAL) — ໃຊ້ແທນລົບ",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop/shop/{{shop_id}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Shop Subscriptions",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-subscription/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": {{shop_id}},\n  \"plan_id\": {{plan_id}},\n  \"start_date\": \"2026-07-10\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List (pagination)",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop-subscription/subscription?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Get by id",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop-subscription/subscription?id={{subscription_id}}"
+              }
+            },
+            {
+              "name": "Update (PATCH — plan_id / end_date)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-subscription/subscription/{{subscription_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"end_date\": \"2026-08-10\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Change status (ACTIVE/EXPIRED/CANCELLED) — ໃຊ້ແທນລົບ",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-subscription/subscription/{{subscription_id}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Shop Bank Accounts",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-bank-account/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": {{shop_id}},\n  \"bank_name\": \"BCEL\",\n  \"account_number\": \"010-11-00-00000-1\",\n  \"account_name\": \"Vientiane Fashion Co\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List (pagination)",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop-bank-account/bank-account?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Get by id",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop-bank-account/bank-account?id={{bank_account_id}}"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-bank-account/bank-account/{{bank_account_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"promptpay_id\": \"020xxxxxxx\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Deactivate (DELETE — set is_active=false)",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/shop-bank-account/bank-account/{{bank_account_id}}/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Shop Settings",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-setting/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": {{shop_id}},\n  \"currency\": \"LAK\",\n  \"vat_rate\": 7,\n  \"auto_reply_msg\": \"ຂອບໃຈທີ່ທັກມາ ຮ້ານຈະຕອບກັບໄວໆນີ້\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Get by shop_id",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shop-setting/setting/{{shop_id}}/"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shop-setting/setting/{{shop_id}}/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vat_rate\": 10\n}"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 2: Auth/RBAC",
+      "item": [
+        {
+          "name": "1. Users",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/users/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_id\": 1,\n  \"username\": \"staff01\",\n  \"password\": \"password123\",\n  \"full_name\": \"ພະນັກງານ\",\n  \"email\": \"staff01@example.com\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/users/getData?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/users/user-update/1",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"02011112222\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Deactivate",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/users/deleted/1"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Modules",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/module/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"module_name\": \"ຈັດການສິນຄ້າ\",\n  \"display_order\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/module/module?page=1&limit=10"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Main Menus",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/main/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"module_id\": 1,\n  \"menu_name\": \"ລາຍການສິນຄ້າ\",\n  \"icon_class\": \"fa-box\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/main/main-menu?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/main/main-menu/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"icon_class\": \"fa-boxes\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/main/main-menu/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Sub Menus",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/sub/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"main_menu_id\": 1,\n  \"submenu_name\": \"ລາຍການທັງໝົດ\",\n  \"route_path\": \"/products/list\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/sub/sub-menu?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/sub/sub-menu/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Roles",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/role/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_name\": \"Staff\",\n  \"description\": \"ພະນັກງານທົ່ວໄປ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/role/role?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/role/role/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Permissions",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/permission/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_id\": 1,\n  \"submenu_id\": 1,\n  \"can_view\": true,\n  \"can_create\": true,\n  \"can_update\": true,\n  \"can_delete\": false\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/permission/permission?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/permission/permission/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"can_delete\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/permission/permission/1/"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 3: Product Catalog",
+      "item": [
+        {
+          "name": "1. Product Categories",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product-category/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"name\": \"ເສື້ອຜ້າ\",\n  \"sort_order\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/product-category/category?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product-category/category/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"ເສື້ອຜ້າ (ອັບເດດ)\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/product-category/category/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Products",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"category_id\": 1,\n  \"product_name\": \"ເສື້ອຢືດຄໍມົນ\",\n  \"description\": \"ຜ້າຝ້າຍ 100%\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/product/product?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product/product/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_active\": true\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete (soft-delete ຈິງ)",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/product/product/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Product Images",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product-image/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": 1,\n  \"image_url\": \"https://example.com/img1.jpg\",\n  \"sort_order\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/product-image/image?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/product-image/image/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Product Variants",
+          "item": [
+            {
+              "name": "Create (auto-creates inventory)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product-variant/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": 1,\n  \"variant_name\": \"ໄຊສ໌ M ສີດຳ\",\n  \"sku_code\": \"TSHIRT-M-BLACK\",\n  \"price\": 89000,\n  \"cost_price\": 50000,\n  \"weight_grams\": 200\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/product-variant/variant?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/product-variant/variant/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"price\": 95000\n}"
+                }
+              }
+            },
+            {
+              "name": "Deactivate",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/product-variant/variant/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Inventories",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/inventory/inventory?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update reorder_level only (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/inventory/inventory/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reorder_level\": 10\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Stock Movements (immutable ledger)",
+          "item": [
+            {
+              "name": "Create IN (ຮັບເຄື່ອງເຂົ້າສາງ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/stock-movement/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_variant_id\": 1,\n  \"movement_type\": \"IN\",\n  \"qty_change\": 50,\n  \"ref_type\": \"purchase\",\n  \"note\": \"ຮັບເຄື່ອງເຂົ້າສາງ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Create OUT (ຂາຍອອກ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/stock-movement/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_variant_id\": 1,\n  \"movement_type\": \"OUT\",\n  \"qty_change\": -5,\n  \"ref_type\": \"order\",\n  \"note\": \"ຂາຍອອກ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by variant",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/stock-movement/movement?product_variant_id=1&page=1&limit=20"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Stock Reservations",
+          "item": [
+            {
+              "name": "Create (ຈອງ stock)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/stock-reservation/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_variant_id\": 1,\n  \"reserved_qty\": 2,\n  \"expires_at\": \"2026-12-31T00:00:00Z\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by variant",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/stock-reservation/reservation?product_variant_id=1"
+              }
+            },
+            {
+              "name": "Status -> COMPLETED (ຢືນຢັນຂາຍ)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/stock-reservation/reservation/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"COMPLETED\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> EXPIRED (ຍົກເລີກການຈອງ)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/stock-reservation/reservation/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"EXPIRED\"\n}"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 4: Customers",
+      "item": [
+        {
+          "name": "1. Customers",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/customer/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"social_platform_id\": \"fb-1001\",\n  \"customer_name\": \"ນາງ ສົມສະໄໝ\",\n  \"phone_number\": \"02055555555\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/customer/customer?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/customer/customer/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"note\": \"ລູກຄ້າ VIP\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Set default address",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/customer/customer/1/default-address",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"address_id\": 2\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete (ຈະລົ້ມເຫຼວຖ້າມີ orders)",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/customer/customer/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Customer Addresses",
+          "item": [
+            {
+              "name": "Create (ທຳອິດ = auto-default)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/customer-address/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customer_id\": 1,\n  \"recipient_name\": \"ນາງ ສົມສະໄໝ\",\n  \"phone\": \"02055555555\",\n  \"address\": \"ບ້ານ ໂພນທັນ\",\n  \"province\": \"ນະຄອນຫຼວງວຽງຈັນ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by customer",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/customer-address/address?customer_id=1"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/customer-address/address/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"postal_code\": \"01000\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete (ຖືກປະຕິເສດຖ້າ is_default)",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/customer-address/address/1/"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 5: Order/Payment",
+      "item": [
+        {
+          "name": "1. Discounts",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/discount/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"code\": \"SAVE10\",\n  \"discount_type\": \"PERCENT\",\n  \"discount_value\": 10,\n  \"min_order\": 100000,\n  \"usage_limit\": 50\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/discount/discount?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/discount/discount/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"usage_limit\": 100\n}"
+                }
+              }
+            },
+            {
+              "name": "Deactivate",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/discount/discount/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Orders",
+          "item": [
+            {
+              "name": "Create (transaction: snapshot price+reserve stock)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/order/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"customer_id\": 1,\n  \"discount_id\": 1,\n  \"shipping_fee\": 15000,\n  \"items\": [\n    { \"product_variant_id\": 1, \"buy_quantity\": 2 }\n  ]\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/order/order?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Status -> PAYMENT_PENDING_VERIFY",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/order/order/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PAYMENT_PENDING_VERIFY\",\n  \"note\": \"ອັບໂຫຼດສະລິບແລ້ວ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> PAID (ຫັກ stock ຈິງ)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/order/order/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PAID\",\n  \"note\": \"ຢືນຢັນສະລິບແລ້ວ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> CANCELLED (ຄືນ stock)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/order/order/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"CANCELLED\",\n  \"note\": \"ລູກຄ້າຍົກເລີກ\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Order Items (read-only)",
+          "item": [
+            {
+              "name": "List by order",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/order-item/order-item?order_id=1"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Payments",
+          "item": [
+            {
+              "name": "Create (ອັບໂຫຼດສະລິບ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/payment/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_id\": 1,\n  \"payment_method\": \"SLIP\",\n  \"slip_image_path\": \"https://example.com/slip1.jpg\",\n  \"bank_trans_ref_id\": \"TXN-0001\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by order",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/payment/payment?order_id=1"
+              }
+            },
+            {
+              "name": "Verify (staff ຢືນຢັນ)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/payment/payment/1/verify",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_valid_slip\": true,\n  \"verified_amount\": 178000\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Shipments",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shipment/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_id\": 1,\n  \"courier_name\": \"Lao Post\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by order",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/shipment/shipment?order_id=1"
+              }
+            },
+            {
+              "name": "Update (PATCH tracking)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shipment/shipment/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tracking_number\": \"LP123456789\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> PICKED_UP",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shipment/shipment/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PICKED_UP\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> DELIVERED",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/shipment/shipment/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"DELIVERED\"\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Refunds",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/refund/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_id\": 1,\n  \"reason\": \"ສິນຄ້າຊຳລຸດ\",\n  \"refund_amount\": 50000\n}"
+                }
+              }
+            },
+            {
+              "name": "List by order",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/refund/refund?order_id=1"
+              }
+            },
+            {
+              "name": "Status -> APPROVED",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/refund/refund/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"APPROVED\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Status -> DONE",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/refund/refund/1/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"DONE\"\n}"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 6: Social",
+      "item": [
+        {
+          "name": "1. Social Accounts",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/social-account/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"platform\": \"FACEBOOK_PAGE\",\n  \"platform_account_id\": \"fbpage-12345\",\n  \"account_name\": \"ຮ້ານທົດລອງ Page\",\n  \"access_token\": \"SUPER-SECRET-TOKEN\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List (access_token ບໍ່ຮົ່ວ)",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/social-account/account?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Update (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/social-account/account/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"account_name\": \"ຮ້ານທົດລອງ (Official)\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Deactivate",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/social-account/account/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Chat Messages",
+          "item": [
+            {
+              "name": "Send (find-or-create conversation)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/chat-message/send",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"social_account_id\": 1,\n  \"customer_id\": 1,\n  \"sender_type\": \"CUSTOMER\",\n  \"message_body\": \"ສະບາຍດີ ຢາກຖາມລາຄາ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Send staff reply (ບໍ່ນັບ unread)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/chat-message/send",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"social_account_id\": 1,\n  \"customer_id\": 1,\n  \"sender_type\": \"STAFF_AGENT\",\n  \"message_body\": \"ລາຄາ 95,000 ກີບ ຄ່ະ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by conversation",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/chat-message/message?conversation_id=1"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Chat Conversations",
+          "item": [
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/chat-conversation/conversation?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Assign staff / change status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/chat-conversation/conversation/1/",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assigned_staff_id\": 1,\n  \"status\": \"CLOSED\"\n}"
+                }
+              }
+            },
+            {
+              "name": "Mark as read",
+              "request": {
+                "method": "PATCH",
+                "url": "{{base_url}}/chat-conversation/conversation/1/read"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Chat Templates",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/chat-template/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shop_id\": 1,\n  \"trigger_keyword\": \"ລາຄາ\",\n  \"response_body\": \"ລາຄາເລີ່ມຕົ້ນ 89,000 ກີບ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/chat-template/template?page=1&limit=10"
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/chat-template/template/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Webhook Events",
+          "item": [
+            {
+              "name": "Create (ຈຳລອງ webhook ເຂົ້າມາ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/webhook-event/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"social_account_id\": 1,\n  \"event_type\": \"message_received\",\n  \"raw_payload\": \"{\\\"sender\\\":\\\"123\\\",\\\"text\\\":\\\"hello\\\"}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List unprocessed",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/webhook-event/event?processed=false"
+              }
+            },
+            {
+              "name": "Mark processed",
+              "request": {
+                "method": "PATCH",
+                "url": "{{base_url}}/webhook-event/event/1/processed"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zone 7: Live-session",
+      "item": [
+        {
+          "name": "1. Live Sessions",
+          "item": [
+            {
+              "name": "Create (start live)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/live-session/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"social_account_id\": 1,\n  \"fb_video_id\": \"fbvid-999\",\n  \"session_title\": \"ໄລ້ຂາຍເສື້ອຜ້າ\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/live-session/session?page=1&limit=10"
+              }
+            },
+            {
+              "name": "End (STREAMING->ENDED)",
+              "request": {
+                "method": "PATCH",
+                "url": "{{base_url}}/live-session/session/1/end"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Live Session Products",
+          "item": [
+            {
+              "name": "Create (ປັກໝຸດສິນຄ້າ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/live-session-product/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"live_session_id\": 1,\n  \"product_variant_id\": 1,\n  \"live_price\": 79000,\n  \"cf_code_override\": \"ABC123\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List by session",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/live-session-product/product?live_session_id=1"
+              }
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "method": "DELETE",
+                "url": "{{base_url}}/live-session-product/product/1/"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Comments Raw",
+          "item": [
+            {
+              "name": "Create (ຈຳລອງ comment ເຂົ້າມາ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/comment-raw/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"live_session_id\": 1,\n  \"fb_comment_id\": \"cmt-001\",\n  \"fb_user_id\": \"fbuser-777\",\n  \"comment_message\": \"CF ABC123 x2\"\n}"
+                }
+              }
+            },
+            {
+              "name": "List unprocessed",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/comment-raw/comment?processed=false"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Comment Intents (ຢືນຢັນ CF)",
+          "item": [
+            {
+              "name": "Create — CF_SUCCESS (ມີ product+qty, stock ພຽງພໍ)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/comment-intent/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"comment_raw_id\": 1,\n  \"customer_id\": 1,\n  \"matched_product_variant_id\": 1,\n  \"parsed_qty\": 2\n}"
+                }
+              }
+            },
+            {
+              "name": "Create — INVALID_CODE (ບໍ່ມີ product ຈັບຄູ່)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/comment-intent/create",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"comment_raw_id\": 2,\n  \"customer_id\": 1\n}"
+                }
+              }
+            },
+            {
+              "name": "List by customer",
+              "request": {
+                "method": "GET",
+                "url": "{{base_url}}/comment-intent/intent?customer_id=1"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -82,3 +82,25 @@ func GetSocialAccountDataQuery(ctx context.Context, id *int, paginationParams *p
 	}
 	return items, paginationResult, nil
 }
+
+// GetSocialAccountByPlatformAccount ຄົ້ນຫາ social_account ດ້ວຍ (platform, platform_account_id) — ໃຊ້ຕອນຮັບ webhook ຈິງ
+// ເພື່ອຮູ້ວ່າ event ນີ້ແມ່ນຂອງ shop/page ໃດ
+func GetSocialAccountByPlatformAccount(ctx context.Context, platform, platformAccountID string) (*dbschema.SocialAccountDBSchema, error) {
+	psql := db.GetPSQLCommand()
+	query := psql.Select(socialAccountColumns...).From(`"social_accounts"`).
+		Where("platform=?::platform_enum", platform).
+		Where("platform_account_id=?", platformAccountID).
+		Where("is_active=true")
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+	var item dbschema.SocialAccountDBSchema
+	if err := scanSocialAccount(dbpkg.DB.QueryRow(ctx, sql, args...), &item); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("social account not found for platform=%s account=%s", platform, platformAccountID)
+		}
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	return &item, nil
+}

@@ -83,6 +83,28 @@ func GetCustomerDataQuery(ctx context.Context, id *int, paginationParams *pagina
 	return items, paginationResult, nil
 }
 
+// GetCustomerBySocialPlatformID ຄົ້ນຫາ customer ດ້ວຍ (shop_id, social_platform_id) — ໃຊ້ຕອນ parse comment ອັດຕະໂນມັດ
+// ເພື່ອຮູ້ວ່າ fb_user_id ນີ້ແມ່ນ customer ຄົນໃດ. ຄືນ nil, nil ຖ້າບໍ່ພົບ (ບໍ່ແມ່ນ error — customer ອາດຍັງບໍ່ເຄີຍລົງທະບຽນ)
+func GetCustomerBySocialPlatformID(ctx context.Context, shopID int, socialPlatformID string) (*dbschema.CustomerDBSchema, error) {
+	psql := db.GetPSQLCommand()
+	query := psql.Select(customerColumns...).From(`"customers"`).
+		Where("shop_id=?", shopID).
+		Where("social_platform_id=?", socialPlatformID)
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+	var item dbschema.CustomerDBSchema
+	err = scanCustomer(dbpkg.DB.QueryRow(ctx, sql, args...), &item)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	return &item, nil
+}
+
 // GetCustomerByIDForUpdate ອ່ານພ້ອມລັອກແຖວ — ໃຊ້ຕອນສ້າງ/ຕັ້ງ default address ໃນ transaction ດຽວກັນ
 func GetCustomerByIDForUpdate(ctx context.Context, tx dbpkg.DBTX, id int) (*dbschema.CustomerDBSchema, error) {
 	psql := db.GetPSQLCommand()
