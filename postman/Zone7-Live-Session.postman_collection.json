@@ -1,0 +1,80 @@
+{
+  "info": {
+    "name": "go-echo-template — Zone 7: Live-session",
+    "description": "live_sessions, live_session_products, comments_raw, comment_intents (ຫົວໃຈ live-selling — ຢືນຢັນ CF)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Live Sessions",
+      "item": [
+        {
+          "name": "Create (start live)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/live-session/create",
+            "body": { "mode": "raw", "raw": "{\n  \"social_account_id\": 1,\n  \"fb_video_id\": \"fbvid-999\",\n  \"session_title\": \"ໄລ້ຂາຍເສື້ອຜ້າ\"\n}" }
+          }
+        },
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/live-session/session?page=1&limit=10" } },
+        { "name": "End (STREAMING->ENDED)", "request": { "method": "PATCH", "url": "{{base_url}}/live-session/session/1/end" } }
+      ]
+    },
+    {
+      "name": "2. Live Session Products",
+      "item": [
+        {
+          "name": "Create (ປັກໝຸດສິນຄ້າ)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/live-session-product/create",
+            "body": { "mode": "raw", "raw": "{\n  \"live_session_id\": 1,\n  \"product_variant_id\": 1,\n  \"live_price\": 79000,\n  \"cf_code_override\": \"ABC123\"\n}" }
+          }
+        },
+        { "name": "List by session", "request": { "method": "GET", "url": "{{base_url}}/live-session-product/product?live_session_id=1" } },
+        { "name": "Delete", "request": { "method": "DELETE", "url": "{{base_url}}/live-session-product/product/1/" } }
+      ]
+    },
+    {
+      "name": "3. Comments Raw",
+      "item": [
+        {
+          "name": "Create (ຈຳລອງ comment ເຂົ້າມາ)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/comment-raw/create",
+            "body": { "mode": "raw", "raw": "{\n  \"live_session_id\": 1,\n  \"fb_comment_id\": \"cmt-001\",\n  \"fb_user_id\": \"fbuser-777\",\n  \"comment_message\": \"CF ABC123 x2\"\n}" }
+          }
+        },
+        { "name": "List unprocessed", "request": { "method": "GET", "url": "{{base_url}}/comment-raw/comment?processed=false" } }
+      ]
+    },
+    {
+      "name": "4. Comment Intents (ຢືນຢັນ CF)",
+      "item": [
+        {
+          "name": "Create — CF_SUCCESS (ມີ product+qty, stock ພຽງພໍ)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/comment-intent/create",
+            "body": { "mode": "raw", "raw": "{\n  \"comment_raw_id\": 1,\n  \"customer_id\": 1,\n  \"matched_product_variant_id\": 1,\n  \"parsed_qty\": 2\n}" }
+          }
+        },
+        {
+          "name": "Create — INVALID_CODE (ບໍ່ມີ product ຈັບຄູ່)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/comment-intent/create",
+            "body": { "mode": "raw", "raw": "{\n  \"comment_raw_id\": 2,\n  \"customer_id\": 1\n}" }
+          }
+        },
+        { "name": "List by customer", "request": { "method": "GET", "url": "{{base_url}}/comment-intent/intent?customer_id=1" } }
+      ]
+    }
+  ]
+}

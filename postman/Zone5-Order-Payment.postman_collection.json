@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "go-echo-template — Zone 5: Order/Payment",
+    "description": "discounts, orders+order_items (transaction, reserves stock), order status state machine, payments, shipments, refunds",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Discounts",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/discount/create",
+            "body": { "mode": "raw", "raw": "{\n  \"shop_id\": 1,\n  \"code\": \"SAVE10\",\n  \"discount_type\": \"PERCENT\",\n  \"discount_value\": 10,\n  \"min_order\": 100000,\n  \"usage_limit\": 50\n}" }
+          }
+        },
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/discount/discount?page=1&limit=10" } },
+        {
+          "name": "Update (PATCH)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/discount/discount/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"usage_limit\": 100\n}" }
+          }
+        },
+        { "name": "Deactivate", "request": { "method": "DELETE", "url": "{{base_url}}/discount/discount/1/" } }
+      ]
+    },
+    {
+      "name": "2. Orders",
+      "item": [
+        {
+          "name": "Create (transaction: snapshot price+reserve stock)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/order/create",
+            "body": { "mode": "raw", "raw": "{\n  \"shop_id\": 1,\n  \"customer_id\": 1,\n  \"discount_id\": 1,\n  \"shipping_fee\": 15000,\n  \"items\": [\n    { \"product_variant_id\": 1, \"buy_quantity\": 2 }\n  ]\n}" }
+          }
+        },
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/order/order?page=1&limit=10" } },
+        {
+          "name": "Status -> PAYMENT_PENDING_VERIFY",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/order/order/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"PAYMENT_PENDING_VERIFY\",\n  \"note\": \"ອັບໂຫຼດສະລິບແລ້ວ\"\n}" }
+          }
+        },
+        {
+          "name": "Status -> PAID (ຫັກ stock ຈິງ)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/order/order/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"PAID\",\n  \"note\": \"ຢືນຢັນສະລິບແລ້ວ\"\n}" }
+          }
+        },
+        {
+          "name": "Status -> CANCELLED (ຄືນ stock)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/order/order/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"CANCELLED\",\n  \"note\": \"ລູກຄ້າຍົກເລີກ\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Order Items (read-only)",
+      "item": [
+        { "name": "List by order", "request": { "method": "GET", "url": "{{base_url}}/order-item/order-item?order_id=1" } }
+      ]
+    },
+    {
+      "name": "4. Payments",
+      "item": [
+        {
+          "name": "Create (ອັບໂຫຼດສະລິບ)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/payment/create",
+            "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1,\n  \"payment_method\": \"SLIP\",\n  \"slip_image_path\": \"https://example.com/slip1.jpg\",\n  \"bank_trans_ref_id\": \"TXN-0001\"\n}" }
+          }
+        },
+        { "name": "List by order", "request": { "method": "GET", "url": "{{base_url}}/payment/payment?order_id=1" } },
+        {
+          "name": "Verify (staff ຢືນຢັນ)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/payment/payment/1/verify",
+            "body": { "mode": "raw", "raw": "{\n  \"is_valid_slip\": true,\n  \"verified_amount\": 178000\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Shipments",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/shipment/create",
+            "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1,\n  \"courier_name\": \"Lao Post\"\n}" }
+          }
+        },
+        { "name": "List by order", "request": { "method": "GET", "url": "{{base_url}}/shipment/shipment?order_id=1" } },
+        {
+          "name": "Update (PATCH tracking)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/shipment/shipment/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"tracking_number\": \"LP123456789\"\n}" }
+          }
+        },
+        {
+          "name": "Status -> PICKED_UP",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/shipment/shipment/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"PICKED_UP\"\n}" }
+          }
+        },
+        {
+          "name": "Status -> DELIVERED",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/shipment/shipment/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"DELIVERED\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Refunds",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/refund/create",
+            "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1,\n  \"reason\": \"ສິນຄ້າຊຳລຸດ\",\n  \"refund_amount\": 50000\n}" }
+          }
+        },
+        { "name": "List by order", "request": { "method": "GET", "url": "{{base_url}}/refund/refund?order_id=1" } },
+        {
+          "name": "Status -> APPROVED",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/refund/refund/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"APPROVED\"\n}" }
+          }
+        },
+        {
+          "name": "Status -> DONE",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/refund/refund/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"DONE\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}

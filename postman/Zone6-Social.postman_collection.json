@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "go-echo-template — Zone 6: Social",
+    "description": "social_accounts (access_token masked), chat_conversations+chat_messages (find-or-create, unread_count), chat_templates, webhook_events",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Social Accounts",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/social-account/create",
+            "body": { "mode": "raw", "raw": "{\n  \"shop_id\": 1,\n  \"platform\": \"FACEBOOK_PAGE\",\n  \"platform_account_id\": \"fbpage-12345\",\n  \"account_name\": \"ຮ້ານທົດລອງ Page\",\n  \"access_token\": \"SUPER-SECRET-TOKEN\"\n}" }
+          }
+        },
+        { "name": "List (access_token ບໍ່ຮົ່ວ)", "request": { "method": "GET", "url": "{{base_url}}/social-account/account?page=1&limit=10" } },
+        {
+          "name": "Update (PATCH)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/social-account/account/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"account_name\": \"ຮ້ານທົດລອງ (Official)\"\n}" }
+          }
+        },
+        { "name": "Deactivate", "request": { "method": "DELETE", "url": "{{base_url}}/social-account/account/1/" } }
+      ]
+    },
+    {
+      "name": "2. Chat Messages",
+      "item": [
+        {
+          "name": "Send (find-or-create conversation)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/chat-message/send",
+            "body": { "mode": "raw", "raw": "{\n  \"social_account_id\": 1,\n  \"customer_id\": 1,\n  \"sender_type\": \"CUSTOMER\",\n  \"message_body\": \"ສະບາຍດີ ຢາກຖາມລາຄາ\"\n}" }
+          }
+        },
+        {
+          "name": "Send staff reply (ບໍ່ນັບ unread)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/chat-message/send",
+            "body": { "mode": "raw", "raw": "{\n  \"social_account_id\": 1,\n  \"customer_id\": 1,\n  \"sender_type\": \"STAFF_AGENT\",\n  \"message_body\": \"ລາຄາ 95,000 ກີບ ຄ່ະ\"\n}" }
+          }
+        },
+        { "name": "List by conversation", "request": { "method": "GET", "url": "{{base_url}}/chat-message/message?conversation_id=1" } }
+      ]
+    },
+    {
+      "name": "3. Chat Conversations",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/chat-conversation/conversation?page=1&limit=10" } },
+        {
+          "name": "Assign staff / change status",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/chat-conversation/conversation/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"assigned_staff_id\": 1,\n  \"status\": \"CLOSED\"\n}" }
+          }
+        },
+        { "name": "Mark as read", "request": { "method": "PATCH", "url": "{{base_url}}/chat-conversation/conversation/1/read" } }
+      ]
+    },
+    {
+      "name": "4. Chat Templates",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/chat-template/create",
+            "body": { "mode": "raw", "raw": "{\n  \"shop_id\": 1,\n  \"trigger_keyword\": \"ລາຄາ\",\n  \"response_body\": \"ລາຄາເລີ່ມຕົ້ນ 89,000 ກີບ\"\n}" }
+          }
+        },
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/chat-template/template?page=1&limit=10" } },
+        { "name": "Delete", "request": { "method": "DELETE", "url": "{{base_url}}/chat-template/template/1/" } }
+      ]
+    },
+    {
+      "name": "5. Webhook Events",
+      "item": [
+        {
+          "name": "Create (ຈຳລອງ webhook ເຂົ້າມາ)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/webhook-event/create",
+            "body": { "mode": "raw", "raw": "{\n  \"social_account_id\": 1,\n  \"event_type\": \"message_received\",\n  \"raw_payload\": \"{\\\"sender\\\":\\\"123\\\",\\\"text\\\":\\\"hello\\\"}\"\n}" }
+          }
+        },
+        { "name": "List unprocessed", "request": { "method": "GET", "url": "{{base_url}}/webhook-event/event?processed=false" } },
+        { "name": "Mark processed", "request": { "method": "PATCH", "url": "{{base_url}}/webhook-event/event/1/processed" } }
+      ]
+    }
+  ]
+}

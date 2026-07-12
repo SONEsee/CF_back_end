@@ -57,4 +57,71 @@ func SetRoutes(echo *echo.Group) {
 
 	productImageRoutes := echo.Group("/product-image", middleware.AuthMiddleware)
 	SetRoutesProductImage(productImageRoutes)
+
+	productVariantRoutes := echo.Group("/product-variant", middleware.AuthMiddleware)
+	SetRoutesProductVariant(productVariantRoutes)
+
+	inventoryRoutes := echo.Group("/inventory", middleware.AuthMiddleware)
+	SetRoutesInventory(inventoryRoutes)
+
+	stockMovementRoutes := echo.Group("/stock-movement", middleware.AuthMiddleware)
+	SetRoutesStockMovement(stockMovementRoutes)
+
+	stockReservationRoutes := echo.Group("/stock-reservation", middleware.AuthMiddleware)
+	SetRoutesStockReservation(stockReservationRoutes)
+
+	// ✅ Zone 4: Customers
+	customerRoutes := echo.Group("/customer", middleware.AuthMiddleware)
+	SetRoutesCustomer(customerRoutes)
+
+	customerAddressRoutes := echo.Group("/customer-address", middleware.AuthMiddleware)
+	SetRoutesCustomerAddress(customerAddressRoutes)
+
+	// ✅ Zone 5: Order/Payment
+	discountRoutes := echo.Group("/discount", middleware.AuthMiddleware)
+	SetRoutesDiscount(discountRoutes)
+
+	orderRoutes := echo.Group("/order", middleware.AuthMiddleware)
+	SetRoutesOrder(orderRoutes)
+
+	orderItemRoutes := echo.Group("/order-item", middleware.AuthMiddleware)
+	SetRoutesOrderItem(orderItemRoutes)
+
+	paymentRoutes := echo.Group("/payment", middleware.AuthMiddleware)
+	SetRoutesPayment(paymentRoutes)
+
+	shipmentRoutes := echo.Group("/shipment", middleware.AuthMiddleware)
+	SetRoutesShipment(shipmentRoutes)
+
+	refundRoutes := echo.Group("/refund", middleware.AuthMiddleware)
+	SetRoutesRefund(refundRoutes)
+
+	// ✅ Zone 6: Social
+	socialAccountRoutes := echo.Group("/social-account", middleware.AuthMiddleware)
+	SetRoutesSocialAccount(socialAccountRoutes)
+
+	chatConversationRoutes := echo.Group("/chat-conversation", middleware.AuthMiddleware)
+	SetRoutesChatConversation(chatConversationRoutes)
+
+	chatMessageRoutes := echo.Group("/chat-message", middleware.AuthMiddleware)
+	SetRoutesChatMessage(chatMessageRoutes)
+
+	chatTemplateRoutes := echo.Group("/chat-template", middleware.AuthMiddleware)
+	SetRoutesChatTemplate(chatTemplateRoutes)
+
+	webhookEventRoutes := echo.Group("/webhook-event", middleware.AuthMiddleware)
+	SetRoutesWebhookEvent(webhookEventRoutes)
+
+	// ✅ Zone 7: Live-session
+	liveSessionRoutes := echo.Group("/live-session", middleware.AuthMiddleware)
+	SetRoutesLiveSession(liveSessionRoutes)
+
+	liveSessionProductRoutes := echo.Group("/live-session-product", middleware.AuthMiddleware)
+	SetRoutesLiveSessionProduct(liveSessionProductRoutes)
+
+	commentRawRoutes := echo.Group("/comment-raw", middleware.AuthMiddleware)
+	SetRoutesCommentRaw(commentRawRoutes)
+
+	commentIntentRoutes := echo.Group("/comment-intent", middleware.AuthMiddleware)
+	SetRoutesCommentIntent(commentIntentRoutes)
 }

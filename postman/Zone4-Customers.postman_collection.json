@@ -1,0 +1,68 @@
+{
+  "info": {
+    "name": "go-echo-template — Zone 4: Customers",
+    "description": "customers, customer_addresses (auto-default, block-delete-if-default), default-address endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Customers",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customer/create",
+            "body": { "mode": "raw", "raw": "{\n  \"shop_id\": 1,\n  \"social_platform_id\": \"fb-1001\",\n  \"customer_name\": \"ນາງ ສົມສະໄໝ\",\n  \"phone_number\": \"02055555555\"\n}" }
+          }
+        },
+        { "name": "List", "request": { "method": "GET", "url": "{{base_url}}/customer/customer?page=1&limit=10" } },
+        {
+          "name": "Update (PATCH)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customer/customer/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"ລູກຄ້າ VIP\"\n}" }
+          }
+        },
+        {
+          "name": "Set default address",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customer/customer/1/default-address",
+            "body": { "mode": "raw", "raw": "{\n  \"address_id\": 2\n}" }
+          }
+        },
+        { "name": "Delete (ຈະລົ້ມເຫຼວຖ້າມີ orders)", "request": { "method": "DELETE", "url": "{{base_url}}/customer/customer/1/" } }
+      ]
+    },
+    {
+      "name": "2. Customer Addresses",
+      "item": [
+        {
+          "name": "Create (ທຳອິດ = auto-default)",
+          "request": {
+            "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customer-address/create",
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": 1,\n  \"recipient_name\": \"ນາງ ສົມສະໄໝ\",\n  \"phone\": \"02055555555\",\n  \"address\": \"ບ້ານ ໂພນທັນ\",\n  \"province\": \"ນະຄອນຫຼວງວຽງຈັນ\"\n}" }
+          }
+        },
+        { "name": "List by customer", "request": { "method": "GET", "url": "{{base_url}}/customer-address/address?customer_id=1" } },
+        {
+          "name": "Update (PATCH)",
+          "request": {
+            "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/customer-address/address/1/",
+            "body": { "mode": "raw", "raw": "{\n  \"postal_code\": \"01000\"\n}" }
+          }
+        },
+        { "name": "Delete (ຖືກປະຕິເສດຖ້າ is_default)", "request": { "method": "DELETE", "url": "{{base_url}}/customer-address/address/1/" } }
+      ]
+    }
+  ]
+}
