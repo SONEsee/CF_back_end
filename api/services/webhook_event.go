@@ -33,6 +33,25 @@ func GetDataWebhookEventServices(ctx context.Context, id *int, processed *bool, 
 	return items, result, nil
 }
 
+// IngestWebhookEventServices ບັນທຶກ event ຈາກ webhook ຈິງ (ຫຼັງກວດ signature ຜ່ານແລ້ວ) — ຄົ້ນຫາ social_account
+// ດ້ວຍ (platform, platformAccountID), ຖ້າບໍ່ພົບ (ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່ page/channel ນີ້ໄວ້ໃນລະບົບ) ຈະ return error ໃຫ້ caller ຕັດສິນໃຈ
+func IngestWebhookEventServices(ctx context.Context, platform, platformAccountID, eventType, rawPayload string) error {
+	account, err := dbquery.GetSocialAccountByPlatformAccount(ctx, platform, platformAccountID)
+	if err != nil {
+		return err
+	}
+
+	tx := dbpkg.GetTransactionManager()
+	return tx.WithTransaction(ctx, func(ctx context.Context) error {
+		db := dbpkg.GetDBFromContext(ctx)
+		return dbinserts.CreateWebhookEvent(ctx, db, requestbody.WebhookEventRequestBody{
+			SocialAccountID: account.ID,
+			EventType:       eventType,
+			RawPayload:      rawPayload,
+		})
+	})
+}
+
 func MarkWebhookEventProcessedServices(ctx context.Context, id int64) error {
 	tx := dbpkg.GetTransactionManager()
 	return tx.WithTransaction(ctx, func(ctx context.Context) error {

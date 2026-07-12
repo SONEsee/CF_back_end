@@ -7,5 +7,6 @@ import (
 
 func SetRoutesCommentIntent(routes *echo.Group) {
 	routes.POST("/create", controllers.CreateCommentIntentController)
+	routes.POST("/parse", controllers.ParseCommentController)
 	routes.GET("/intent", controllers.GetDataCommentIntentController)
 }
