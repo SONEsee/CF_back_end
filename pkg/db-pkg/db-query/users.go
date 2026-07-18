@@ -85,18 +85,34 @@ func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *paginati
 }
 
 func GetUserByUsername(ctx context.Context, tx dbpkg.DBTX, username string) (*dbschema.UserDBSchema, error) {
-	psql := db.GetPSQLCommand()
-	query := psql.Select(userColumns...).From(`"users"`).Where("username=?", username)
-	sql, args, err := query.ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build query: %w", err)
-	}
-	var item dbschema.UserDBSchema
-	if err := scanUser(tx.QueryRow(ctx, sql, args...), &item); err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("user not found")
-		}
-		return nil, fmt.Errorf("failed to get user: %w", err)
-	}
-	return &item, nil
+
+    psql := db.GetPSQLCommand()
+
+    query := psql.
+        Select(userColumns...).
+        From(`"users"`).
+        Where("username = ?", username)
+
+    sql, args, err := query.ToSql()
+    if err != nil {
+        return nil, err
+    }
+
+    fmt.Println("====================")
+    fmt.Println("SQL :", sql)
+    fmt.Println("ARGS:", args)
+    fmt.Println("====================")
+
+    var item dbschema.UserDBSchema
+
+    err = scanUser(tx.QueryRow(ctx, sql, args...), &item)
+
+    fmt.Println("SCAN ERROR =", err)
+    fmt.Printf("USER = %+v\n", item)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return &item, nil
 }

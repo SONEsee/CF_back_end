@@ -1,3 +1,4 @@
+//db-schema/user.go
 package dbschema
 
 import "time"
