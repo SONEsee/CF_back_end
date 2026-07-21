@@ -35,10 +35,17 @@ func GetDataSubMenuController(c echo.Context) error {
 		}
 		id = &parsedID
 	}
+
+	// 🟢 ດຶງ Query String `q` ສໍາລັບການ Search
+	var q *string
+	if qParam := c.QueryParam("q"); qParam != "" {
+		q = &qParam
+	}
+
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
 
-	items, paginationResult, err := services.GetDataSubMenuServices(ctx, id, page, pageSize)
+	items, paginationResult, err := services.GetDataSubMenuServices(ctx, id, q, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
@@ -46,6 +53,7 @@ func GetDataSubMenuController(c echo.Context) error {
 		log.Printf("get sub menu error: %v", err)
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້"))
 	}
+
 	if paginationResult != nil {
 		return c.JSON(http.StatusOK, presenters.ResponseSuccessListData(
 			items, paginationResult.CurrentPage, paginationResult.CurrentPageTotalItem,

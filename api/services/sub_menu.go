@@ -22,16 +22,17 @@ func CreateSubMenuServices(ctx context.Context, req requestbody.SubMenuRequesBod
 	})
 }
 
-func GetDataSubMenuServices(ctx context.Context, id *int, page, pageSize int) ([]dbschema.SubMenuDBSchema, *pagination.PaginationResult, error) {
-	var paginationParam *pagination.PaginationParams
-	if page > 0 || pageSize > 0 {
-		paginationParam = pagination.NewPaginationParams(page, pageSize)
-	}
-	items, result, err := dbquery.GetSubMenuDataQuery(ctx, id, paginationParam)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get data: %w", err)
-	}
-	return items, result, nil
+func GetDataSubMenuServices(ctx context.Context, id *int, q *string, page, pageSize int) ([]dbschema.SubMenuDBSchema, *pagination.PaginationResult, error) {
+    var paginationParam *pagination.PaginationParams
+    if page > 0 || pageSize > 0 {
+        paginationParam = pagination.NewPaginationParams(page, pageSize)
+    }
+    
+    items, result, err := dbquery.GetSubMenuDataQuery(ctx, id, q, paginationParam)
+    if err != nil {
+        return nil, nil, fmt.Errorf("failed to get data: %w", err)
+    }
+    return items, result, nil
 }
 
 func UpdateSubMenuPutServices(ctx context.Context, id int64, req requestbody.SubMenuRequesBody) error {
