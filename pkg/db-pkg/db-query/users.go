@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/SONEsee/go-echo/config/db"
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
@@ -11,17 +12,17 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-var userColumns = []string{"id", "shop_id", "role_id", "username", "password_hash", "full_name", "email", "phone", "is_active", "last_login_at", "created_at", "updated_at"}
+var userColumns = []string{"id", "shop_id", "role_id", "username", "password_hash", "full_name", "email", "phone", "profile_image", "is_active", "last_login_at", "created_at", "updated_at"}
 
 func scanUser(row pgx.Row, item *dbschema.UserDBSchema) error {
 	return row.Scan(
 		&item.ID, &item.ShopID, &item.RoleID, &item.Username, &item.PasswordHash,
-		&item.FullName, &item.Email, &item.Phone, &item.IsActive, &item.LastLoginAt,
+		&item.FullName, &item.Email, &item.Phone, &item.ProfileImage, &item.IsActive, &item.LastLoginAt,
 		&item.CreatedAt, &item.UpdatedAt,
 	)
 }
 
-func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.UserDBSchema, *pagination.PaginationResult, error) {
+func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams, q string) ([]dbschema.UserDBSchema, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 
 	if id != nil {
@@ -40,8 +41,21 @@ func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *paginati
 		return []dbschema.UserDBSchema{item}, nil, nil
 	}
 
+	// ຄົ້ນຫາຈາກ username, full_name ຫຼື email (ILIKE = case-insensitive ໃນ Postgres)
+	applySearch := func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+		if q == "" {
+			return b
+		}
+		like := "%" + q + "%"
+		return b.Where(squirrel.Or{
+			squirrel.ILike{"username": like},
+			squirrel.ILike{"full_name": like},
+			squirrel.ILike{"email": like},
+		})
+	}
+
 	var totalItem int
-	countSQL, countArgs, err := psql.Select("COUNT(*)").From(`"users"`).ToSql()
+	countSQL, countArgs, err := applySearch(psql.Select("COUNT(*)").From(`"users"`)).ToSql()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build count query: %w", err)
 	}
@@ -49,7 +63,7 @@ func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *paginati
 		return nil, nil, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := psql.Select(userColumns...).From(`"users"`).OrderBy("id ASC")
+	query := applySearch(psql.Select(userColumns...).From(`"users"`)).OrderBy("id ASC")
 
 	var paginationResult *pagination.PaginationResult
 	if paginationParams != nil && paginationParams.IsValid() {

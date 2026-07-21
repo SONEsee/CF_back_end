@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/SONEsee/go-echo/config/db"
 	dbpkg "github.com/SONEsee/go-echo/pkg/db-pkg"
 	dbschema "github.com/SONEsee/go-echo/pkg/db-pkg/db-schema"
@@ -11,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetRoleDataQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams) ([]dbschema.RoleDBSchema, *pagination.PaginationResult, error) {
+func GetRoleDataQuery(ctx context.Context, id *int, paginationParams *pagination.PaginationParams, q string) ([]dbschema.RoleDBSchema, *pagination.PaginationResult, error) {
 	psql := db.GetPSQLCommand()
 
 	if id != nil {
@@ -31,8 +32,20 @@ func GetRoleDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		return []dbschema.RoleDBSchema{item}, nil, nil
 	}
 
+	// ຄົ້ນຫາຈາກ role_name ຫຼື description (ILIKE = case-insensitive ໃນ Postgres)
+	applySearch := func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+		if q == "" {
+			return b
+		}
+		like := "%" + q + "%"
+		return b.Where(squirrel.Or{
+			squirrel.ILike{"role_name": like},
+			squirrel.ILike{"description": like},
+		})
+	}
+
 	var totalItem int
-	countSQL, countArgs, err := psql.Select("COUNT(*)").From(`"roles"`).ToSql()
+	countSQL, countArgs, err := applySearch(psql.Select("COUNT(*)").From(`"roles"`)).ToSql()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build count query: %w", err)
 	}
@@ -40,7 +53,7 @@ func GetRoleDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		return nil, nil, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := psql.Select("id", "shop_id", "role_name", "description", "created_at").From(`"roles"`).OrderBy("id ASC")
+	query := applySearch(psql.Select("id", "shop_id", "role_name", "description", "created_at").From(`"roles"`)).OrderBy("id ASC")
 
 	var paginationResult *pagination.PaginationResult
 	if paginationParams != nil && paginationParams.IsValid() {
@@ -73,4 +86,32 @@ func GetRoleDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		paginationResult = paginationParams.CalculatePagination(totalItem, len(items))
 	}
 	return items, paginationResult, nil
+}
+
+// GetRoleOptionsQuery ດຶງ role ທັງໝົດແບບບໍ່ມີ limit/pagination — ໃຊ້ສຳລັບ dropdown/autocomplete
+func GetRoleOptionsQuery(ctx context.Context) ([]dbschema.RoleOptionDBSchema, error) {
+	psql := db.GetPSQLCommand()
+	query := psql.Select("id", "role_name").From(`"roles"`).OrderBy("role_name ASC")
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+	rows, err := dbpkg.DB.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query role options: %w", err)
+	}
+	defer rows.Close()
+
+	var items []dbschema.RoleOptionDBSchema
+	for rows.Next() {
+		var item dbschema.RoleOptionDBSchema
+		if err := rows.Scan(&item.ID, &item.RoleName); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+	return items, nil
 }

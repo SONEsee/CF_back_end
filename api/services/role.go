@@ -22,12 +22,12 @@ func CreateRoleServices(ctx context.Context, req requestbody.RoleRequestBody) er
 	})
 }
 
-func GetDataRoleServices(ctx context.Context, id *int, page, pageSize int) ([]dbschema.RoleDBSchema, *pagination.PaginationResult, error) {
+func GetDataRoleServices(ctx context.Context, id *int, page, pageSize int, q string) ([]dbschema.RoleDBSchema, *pagination.PaginationResult, error) {
 	var paginationParam *pagination.PaginationParams
 	if page > 0 || pageSize > 0 {
 		paginationParam = pagination.NewPaginationParams(page, pageSize)
 	}
-	items, result, err := dbquery.GetRoleDataQuery(ctx, id, paginationParam)
+	items, result, err := dbquery.GetRoleDataQuery(ctx, id, paginationParam, q)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get data: %w", err)
 	}
@@ -56,4 +56,13 @@ func DeleteRoleServices(ctx context.Context, id int64) error {
 		db := dbpkg.GetDBFromContext(ctx)
 		return dbdelete.DeleteRole(ctx, db, id)
 	})
+}
+
+// GetRoleOptionsServices ດຶງ role ທັງໝົດແບບບໍ່ມີ pagination — ໃຊ້ສຳລັບ dropdown/autocomplete
+func GetRoleOptionsServices(ctx context.Context) ([]dbschema.RoleOptionDBSchema, error) {
+	items, err := dbquery.GetRoleOptionsQuery(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get role options: %w", err)
+	}
+	return items, nil
 }

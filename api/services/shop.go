@@ -56,3 +56,12 @@ func UpdateShopStatusServices(ctx context.Context, id int64, status string) erro
 		return dbupdate.UpdateShopStatus(ctx, db, id, status)
 	})
 }
+
+// GetShopOptionsServices ດຶງ shop ທັງໝົດແບບບໍ່ມີ pagination — ໃຊ້ສຳລັບ dropdown/autocomplete
+func GetShopOptionsServices(ctx context.Context) ([]dbschema.ShopOptionDBSchema, error) {
+	items, err := dbquery.GetShopOptionsQuery(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get shop options: %w", err)
+	}
+	return items, nil
+}

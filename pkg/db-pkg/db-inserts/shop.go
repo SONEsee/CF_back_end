@@ -14,9 +14,13 @@ func CreateShop(ctx context.Context, tx dbpkg.DBTX, req requestbody.ShopRequestB
 	if timezone == "" {
 		timezone = "Asia/Bangkok"
 	}
+	var imageURL *string
+	if req.ImageURL != "" {
+		imageURL = &req.ImageURL
+	}
 	query := psql.Insert(`"shops"`).
-		Columns("shop_name", "owner_user_id", "phone", "timezone").
-		Values(req.ShopName, req.OwnerUserID, req.Phone, timezone)
+		Columns("shop_name", "owner_user_id", "phone", "timezone", "image_url").
+		Values(req.ShopName, req.OwnerUserID, req.Phone, timezone, imageURL)
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return err

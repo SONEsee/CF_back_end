@@ -8,6 +8,7 @@ import (
 func SetRoutesShop(routes *echo.Group) {
 	routes.POST("/create", controllers.CreateShopController)
 	routes.GET("/shop", controllers.GetDataShopController)
+	routes.GET("/shop-options", controllers.GetShopOptionsController)
 	routes.PUT("/shop/:id/", controllers.UpdateShopPutController)
 	routes.PATCH("/shop/:id/", controllers.UpdateShopPatchController)
 	routes.PATCH("/shop/:id/status", controllers.UpdateShopStatusController)

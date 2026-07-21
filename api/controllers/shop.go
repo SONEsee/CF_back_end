@@ -112,3 +112,14 @@ func UpdateShopStatusController(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("ປ່ຽນສະຖານະສຳເລັດ"))
 }
+
+// GetShopOptionsController ດຶງ shop ທັງໝົດແບບບໍ່ມີ limit/pagination — ໃຊ້ສຳລັບ dropdown/autocomplete
+// ແຍກ endpoint ອອກຈາກ GetDataShopController ໂດຍສະເພາະ ບໍ່ໃຫ້ກະທົບ endpoint ເກົ່າ
+func GetShopOptionsController(c echo.Context) error {
+	items, err := services.GetShopOptionsServices(c.Request().Context())
+	if err != nil {
+		log.Printf("get shop options error: %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້"))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccessWithData("ດຶງຂໍ້ມູນສຳເລັດ", items))
+}

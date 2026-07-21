@@ -35,6 +35,9 @@ func UpdateUser(ctx context.Context, tx dbpkg.DBTX, id int64, req requestbody.Us
 	if req.Phone != nil {
 		query = query.Set("phone", *req.Phone)
 	}
+	if req.ProfileImage != nil {
+		query = query.Set("profile_image", *req.ProfileImage)
+	}
 	query = query.Set("updated_at", time.Now()).Where("id=?", id)
 
 	sql, args, err := query.ToSql()

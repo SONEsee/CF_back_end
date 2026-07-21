@@ -20,6 +20,9 @@ func SetRoutes(echo *echo.Group) {
 	userRoutes := echo.Group("/users", middleware.AuthMiddleware)
 	SetUserRoutes(userRoutes)
 
+	uploadRoutes := echo.Group("/upload", middleware.AuthMiddleware)
+	SetRoutesUpload(uploadRoutes)
+
 	mainMenuRoutes := echo.Group("/main", middleware.AuthMiddleware)
 	SetRoutesMainMenu(mainMenuRoutes)
 

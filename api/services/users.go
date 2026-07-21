@@ -28,12 +28,12 @@ func CreateUserService(ctx context.Context, req requestbody.UserRequestBody) err
 	})
 }
 
-func GetUserService(ctx context.Context, id *int, page, pageSize int) ([]dbschema.UserDBSchema, *pagination.PaginationResult, error) {
+func GetUserService(ctx context.Context, id *int, page, pageSize int, q string) ([]dbschema.UserDBSchema, *pagination.PaginationResult, error) {
 	var paginationParam *pagination.PaginationParams
 	if page > 0 || pageSize > 0 {
 		paginationParam = pagination.NewPaginationParams(page, pageSize)
 	}
-	items, result, err := dbquery.GetUserDataDBQuery(ctx, id, paginationParam)
+	items, result, err := dbquery.GetUserDataDBQuery(ctx, id, paginationParam, q)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get data: %w", err)
 	}

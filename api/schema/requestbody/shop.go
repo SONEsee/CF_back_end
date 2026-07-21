@@ -5,6 +5,7 @@ type ShopRequestBody struct {
 	OwnerUserID *int   `json:"owner_user_id" validate:"omitempty,gt=0"`
 	Phone       string `json:"phone" validate:"omitempty,max=20"`
 	Timezone    string `json:"timezone" validate:"omitempty,max=50"`
+	ImageURL    string `json:"image_url" validate:"omitempty,max=500"`
 }
 
 type ShopPatchRequest struct {
@@ -12,6 +13,7 @@ type ShopPatchRequest struct {
 	OwnerUserID *int    `json:"owner_user_id,omitempty" validate:"omitempty,gt=0"`
 	Phone       *string `json:"phone,omitempty" validate:"omitempty,max=20"`
 	Timezone    *string `json:"timezone,omitempty" validate:"omitempty,max=50"`
+	ImageURL    *string `json:"image_url,omitempty" validate:"omitempty,max=500"`
 }
 
 // ShopStatusRequest ໃຊ້ປ່ຽນສະຖານະຮ້ານ (ACTIVE / SUSPENDED / TRIAL) — ໃຊ້ແທນການລົບ ເນື່ອງຈາກ shops ບໍ່ມີ deleted_at

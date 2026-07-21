@@ -27,8 +27,9 @@ func GetUserController(c echo.Context) error {
 	}
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
+	q := c.QueryParam("q")
 
-	result, paginationResult, err := services.GetUserService(ctx, id, page, pageSize)
+	result, paginationResult, err := services.GetUserService(ctx, id, page, pageSize, q)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
