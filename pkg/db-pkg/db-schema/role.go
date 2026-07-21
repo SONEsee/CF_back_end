@@ -9,3 +9,9 @@ type RoleDBSchema struct {
 	Description string    `db:"description" json:"description"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 }
+
+// RoleOptionDBSchema ເປັນ shape ເບົາໆສຳລັບ dropdown/autocomplete — ບໍ່ມີ pagination
+type RoleOptionDBSchema struct {
+	ID       int    `db:"id" json:"id"`
+	RoleName string `db:"role_name" json:"role_name"`
+}

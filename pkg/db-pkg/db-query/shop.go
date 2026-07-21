@@ -15,7 +15,7 @@ func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination
 	psql := db.GetPSQLCommand()
 
 	if id != nil {
-		query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "created_at", "updated_at").
+		query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "image_url", "created_at", "updated_at").
 			From(`"shops"`).Where("id=?", *id)
 		sql, args, err := query.ToSql()
 		if err != nil {
@@ -23,7 +23,7 @@ func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		}
 		var item dbschema.ShopDBSchema
 		err = dbpkg.DB.QueryRow(ctx, sql, args...).Scan(
-			&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.CreatedAt, &item.UpdatedAt,
+			&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.ImageURL, &item.CreatedAt, &item.UpdatedAt,
 		)
 		if err != nil {
 			if err == pgx.ErrNoRows {
@@ -43,7 +43,7 @@ func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		return nil, nil, fmt.Errorf("failed to count records: %w", err)
 	}
 
-	query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "created_at", "updated_at").
+	query := psql.Select("id", "shop_name", "owner_user_id", "phone", "status", "timezone", "image_url", "created_at", "updated_at").
 		From(`"shops"`).OrderBy("id ASC")
 
 	var paginationResult *pagination.PaginationResult
@@ -64,7 +64,7 @@ func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination
 	var items []dbschema.ShopDBSchema
 	for rows.Next() {
 		var item dbschema.ShopDBSchema
-		if err := rows.Scan(&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.ShopName, &item.OwnerUserID, &item.Phone, &item.Status, &item.Timezone, &item.ImageURL, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			return nil, nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		items = append(items, item)
@@ -77,4 +77,38 @@ func GetShopDataQuery(ctx context.Context, id *int, paginationParams *pagination
 		paginationResult = paginationParams.CalculatePagination(totalItem, len(items))
 	}
 	return items, paginationResult, nil
+}
+
+// GetShopOptionsQuery ດຶງ shop ທັງໝົດແບບບໍ່ມີ limit/pagination (ໃຊ້ສຳລັບ dropdown/autocomplete)
+// ແຍກອອກຈາກ GetShopDataQuery ໂດຍສະເພາະ ເພື່ອບໍ່ໃຫ້ກະທົບ endpoint ລິດການໃຊ້ງານເກົ່າ
+func GetShopOptionsQuery(ctx context.Context) ([]dbschema.ShopOptionDBSchema, error) {
+	psql := db.GetPSQLCommand()
+
+	query := psql.Select("id", "shop_name").
+		From(`"shops"`).
+		Where("status = ?", "ACTIVE").
+		OrderBy("shop_name ASC")
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+	rows, err := dbpkg.DB.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query shop options: %w", err)
+	}
+	defer rows.Close()
+
+	var items []dbschema.ShopOptionDBSchema
+	for rows.Next() {
+		var item dbschema.ShopOptionDBSchema
+		if err := rows.Scan(&item.ID, &item.ShopName); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+	return items, nil
 }

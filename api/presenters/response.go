@@ -45,8 +45,8 @@ func ResponseSuccessListData(data interface{}, currentPage, currentPageTotalItem
 			"pagination": map[string]interface{}{
 				"current_page":            currentPage,
 				"current_page_total_item": currentPageTotalItem,
-				"total_page":              totalItems,
-				"total_items":             totalPage,
+				"total_page":              totalPage,
+				"total_items":             totalItems,
 			},
 		},
 		"error": nil,

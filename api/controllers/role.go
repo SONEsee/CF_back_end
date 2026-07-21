@@ -37,8 +37,9 @@ func GetDataRoleController(c echo.Context) error {
 	}
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
+	q := c.QueryParam("q")
 
-	items, paginationResult, err := services.GetDataRoleServices(ctx, id, page, pageSize)
+	items, paginationResult, err := services.GetDataRoleServices(ctx, id, page, pageSize, q)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			return c.JSON(http.StatusNotFound, presenters.ResponseError("ບໍ່ພົບຂໍ້ມູນ", err.Error()))
@@ -107,4 +108,14 @@ func DeleteRoleController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດລົບຂໍ້ມູນໄດ້"))
 	}
 	return c.JSON(http.StatusOK, presenters.ResponseSuccess("ລົບຂໍ້ມູນສຳເລັດ"))
+}
+
+// GetRoleOptionsController ດຶງ role ທັງໝົດແບບບໍ່ມີ limit/pagination — ໃຊ້ສຳລັບ dropdown/autocomplete
+func GetRoleOptionsController(c echo.Context) error {
+	items, err := services.GetRoleOptionsServices(c.Request().Context())
+	if err != nil {
+		log.Printf("get role options error: %v", err)
+		return c.JSON(http.StatusInternalServerError, presenters.ResponseError("ເກີດຂໍ້ຜິດພາດ", "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້"))
+	}
+	return c.JSON(http.StatusOK, presenters.ResponseSuccessWithData("ດຶງຂໍ້ມູນສຳເລັດ", items))
 }

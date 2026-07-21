@@ -13,11 +13,16 @@ import (
 
 func UpdateShopPut(ctx context.Context, tx dbpkg.DBTX, id int64, req requestbody.ShopRequestBody) error {
 	psql := db.GetPSQLCommand()
+	var imageURL *string
+	if req.ImageURL != "" {
+		imageURL = &req.ImageURL
+	}
 	query := psql.Update(`"shops"`).
 		Set("shop_name", req.ShopName).
 		Set("owner_user_id", req.OwnerUserID).
 		Set("phone", req.Phone).
 		Set("timezone", req.Timezone).
+		Set("image_url", imageURL).
 		Set("updated_at", time.Now()).
 		Where("id=?", id)
 	sql, args, err := query.ToSql()
@@ -49,6 +54,9 @@ func UpdateShopPatch(ctx context.Context, tx dbpkg.DBTX, id int64, req requestbo
 	}
 	if req.Timezone != nil {
 		query = query.Set("timezone", *req.Timezone)
+	}
+	if req.ImageURL != nil {
+		query = query.Set("image_url", *req.ImageURL)
 	}
 	query = query.Set("updated_at", time.Now()).Where("id=?", id)
 

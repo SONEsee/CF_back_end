@@ -60,6 +60,9 @@ func main() {
 		return c.JSON(http.StatusOK, "ok sone!")
 	})
 
+	//serve uploaded files (images) statically
+	e.Static("/uploads", "uploads")
+
 	apiV1 := e.Group("/api/v1")
 	routes.SetRoutes(apiV1)
 

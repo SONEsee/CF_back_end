@@ -12,6 +12,7 @@ type UserDBSchema struct {
 	FullName     string     `db:"full_name" json:"full_name"`
 	Email        string     `db:"email" json:"email"`
 	Phone        string     `db:"phone" json:"phone"`
+	ProfileImage *string    `db:"profile_image" json:"profile_image"`
 	IsActive     bool       `db:"is_active" json:"is_active"`
 	LastLoginAt  *time.Time `db:"last_login_at" json:"last_login_at"`
 	CreatedAt    time.Time  `db:"created_at" json:"created_at"`
