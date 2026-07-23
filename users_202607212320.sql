@@ -1,5 +1,0 @@
-INSERT INTO public.users (shop_id,role_id,username,password_hash,full_name,email,phone,is_active,last_login_at,created_at,updated_at,profile_image) VALUES
-	 (NULL,1,'admin01','$2a$10$7wHf6Eidrv/XtP5ji7qNaeXIhONmYYP9rIJZxlbVgOHdUNE7o5h8C','ຜູ້ດູແລລະບົບ ທົດສອບ','admin01@example.com','02012345678',true,NULL,'2026-07-11 19:02:27.692321+07','2026-07-11 19:02:51.536038+07',NULL),
-	 (1,1,'sonedev','$2a$10$SGQzVuQ8xwMPsgRGrFuiyOFV/M5BPXkYC1IHcIAyZxQxqzmHqowaK','sone','sone@gamil.com','123456789',true,NULL,'2026-07-20 14:33:37.272267+07','2026-07-20 14:33:37.272267+07',NULL),
-	 (1,6,'lae','$2a$10$S/E002bWN/JRW.wGtGNU2uIxbKIWfJCGsakWHaqXzXmE.cblEl3ZW','lae','lae@gmail.com','12345678',true,NULL,'2026-07-21 07:58:50.154005+07','2026-07-21 07:58:50.154005+07',NULL),
-	 (NULL,1,'staff01','$2a$10$HdsMQZUuRxqI/8Ahbb8E2uuI5tJosnKAKUEO03Vw8OHx96IV8SPR.','ພະນັກງານ ທົດສອບ','','',false,NULL,'2026-07-11 19:02:51.604922+07','2026-07-21 08:07:43.876315+07','http://127.0.0.1:8000/uploads/user/1784596063870142000-f826222979c2a6e9.png');
