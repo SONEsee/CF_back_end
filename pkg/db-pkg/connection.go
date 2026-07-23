@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -64,6 +65,13 @@ func NewDatabasePool(cfg DatabaseConfig) (*pgxpool.Pool, error) {
 	config.MaxConnLifetime = cfg.MaxConnLifetime
 	config.MaxConnIdleTime = cfg.MaxConnIdleTime
 	config.HealthCheckPeriod = cfg.HealthCheckPeriod
+
+	// Supabase's pooler (pgbouncer, transaction mode) doesn't support pgx's
+	// default prepared-statement caching, since each query can land on a
+	// different backend connection. Use the simple protocol instead.
+	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+	config.ConnConfig.StatementCacheCapacity = 0
+	config.ConnConfig.DescriptionCacheCapacity = 0
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
