@@ -8,5 +8,5 @@ type WebhookEventDBSchema struct {
 	EventType       *string   `db:"event_type" json:"event_type"`
 	RawPayload      *string   `db:"raw_payload" json:"raw_payload"`
 	Processed       bool      `db:"processed" json:"processed"`
-	ReceivedAt      time.Time `db:"received_at" json:"received_at"`
+	ReceivedAt      time.Time `db:"received_at" json:"received_at"` 
 }

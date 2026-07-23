@@ -63,3 +63,4 @@ func DeactivateUserServices(ctx context.Context, id int64) error {
 		return dbupdate.DeactivateUser(ctx, db, id)
 	})
 }
+ 

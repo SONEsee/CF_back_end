@@ -13,7 +13,7 @@ RUN apk add --no-cache ca-certificates git tzdata && go mod tidy
 
 COPY . .
 
-RUN go build -ldflags "-s -w -extldflags '-static'" -installsuffix cgo -o /bin/echo-api cmd/api/main.go
+RUN go build -ldflags "-s -w -extldflags '-static'" -installsuffix cgo -o /bin/echo-api cmd/api/
 
 # Use alpine image as runtime
 FROM alpine:3.18 AS release

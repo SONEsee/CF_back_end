@@ -51,6 +51,7 @@ func GetUserDataDBQuery(ctx context.Context, id *int, paginationParams *paginati
 			squirrel.ILike{"username": like},
 			squirrel.ILike{"full_name": like},
 			squirrel.ILike{"email": like},
+			squirrel.ILike{"phone": like},
 		})
 	}
 
